@@ -298,7 +298,6 @@ def load_data(sheet_name):
             return pd.DataFrame(sheet.get_all_records())
         except Exception as e:
             if attempt < 2:
-                # Only reconnect on an actual failure, not on every call
                 connect_to_sheets.clear()
                 client = connect_to_sheets()
                 time.sleep(1)
@@ -335,7 +334,6 @@ def save_student_profile(username, display_name, photo_b64=""):
 
     row_data = [username, display_name, photo_b64]
 
-    # Targeted lookup instead of fetching every row in the sheet
     try:
         cell = sheet.find(username, in_column=1)
     except Exception:
@@ -350,8 +348,6 @@ def resize_image_for_storage(image_bytes):
     img = Image.open(BytesIO(image_bytes))
     if img.mode in ('RGBA', 'P'):
         img = img.convert('RGB')
-    # Preserve the original aspect ratio — just cap the longest side
-    # instead of cropping to a square, so the full photo is kept.
     max_side = 300
     w, h = img.size
     scale = min(max_side / w, max_side / h, 1.0)
@@ -598,7 +594,7 @@ def student_dashboard():
     if st.session_state.current_page == "My Dashboard":
 
         # Personal Details
-        render_detail_card("👤 PERSONAL DETAILS", [
+        render_detail_card("PERSONAL DETAILS", [
             ("Full Name", st.session_state.student_name),
             ("Date of Birth", student_row.get("Date of Birth", "N/A") if len(student_info) > 0 else "N/A"),
             ("Gender", student_row.get("Gender", "N/A") if len(student_info) > 0 else "N/A"),
@@ -608,7 +604,7 @@ def student_dashboard():
         ])
 
         # Academic Details
-        render_detail_card("🎓 ACADEMIC DETAILS", [
+        render_detail_card("ACADEMIC DETAILS", [
             ("Student Number", student_row.get("Student Number", "N/A") if len(student_info) > 0 else "N/A"),
             ("Class", student_class),
             ("Registration Status", "Active"),
@@ -617,7 +613,7 @@ def student_dashboard():
 
         # Financial Details
         balance_color = "#4CAF50" if overall_balance <= 0 else "#f44336"
-        render_detail_card("💰 FINANCIAL DETAILS", [
+        render_detail_card("FINANCIAL DETAILS", [
             ("Current Term Fees", f"${current_term_fee:,.0f}"),
             ("Current Fees Paid", f"${current_term_paid:,.0f}"),
             ("Previous Terms Balance", f"${prev_balance:,.0f}"),
@@ -653,6 +649,29 @@ def student_dashboard():
         else:
             st.info("No payment records found.")
 
+    elif st.session_state.current_page == "My Performance":
+        st.subheader("My Performance")
+        if len(my_performance) > 0:
+            # Performance table
+            perf_display = my_performance[['Date', 'Activity', 'Mark', 'Comment']].copy()
+            perf_display = perf_display.sort_values('Date', ascending=False)
+            st.dataframe(perf_display, use_container_width=True, hide_index=True)
+
+            # Summary metrics
+            try:
+                marks = my_performance['Mark'].apply(lambda x: float(str(x).replace('%', '')))
+                avg_mark = marks.mean()
+                avg_mark_display = f"{avg_mark:.1f}%"
+            except (ValueError, TypeError):
+                avg_mark_display = "N/A"
+            col1, col2 = st.columns(2)
+            with col1:
+                st.metric("Total Activities", len(my_performance))
+            with col2:
+                st.metric("Average Mark", avg_mark_display)
+        else:
+            st.info("No performance records found.")
+
     # Footer
     st.markdown("---")
     st.markdown("""
@@ -680,6 +699,9 @@ def student_dashboard():
 
         if st.button("My Dashboard", use_container_width=True):
             st.session_state.current_page = "My Dashboard"
+            st.rerun()
+        if st.button("My Performance", use_container_width=True):
+            st.session_state.current_page = "My Performance"
             st.rerun()
         if st.button("Fee Summary", use_container_width=True):
             st.session_state.current_page = "Fee Summary"
