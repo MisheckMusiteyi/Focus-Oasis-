@@ -104,20 +104,16 @@ st.markdown("""
     /* ── Login Page Shapes ── */
     .top-shape {
         width: 100%;
-        height: 200px;
+        height: 140px;
         background-color: #1B2A4A;
-        border-bottom-left-radius: 50% 60px;
-        border-bottom-right-radius: 50% 60px;
-        margin-bottom: -30px;
+        margin-bottom: 20px;
     }
 
     .bottom-shape {
         width: 100%;
-        height: 120px;
+        height: 90px;
         background-color: #1B2A4A;
-        border-top-left-radius: 50% 60px;
-        border-top-right-radius: 50% 60px;
-        margin-top: -30px;
+        margin-top: 30px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -129,14 +125,6 @@ st.markdown("""
     .bottom-shape p {
         margin: 2px 0;
         color: white !important;
-    }
-
-    /* FIX: collapse Streamlit's default block spacing around the shapes */
-    div[data-testid="stVerticalBlock"] > div:has(.top-shape) {
-        margin-bottom: -30px;
-    }
-    div[data-testid="stVerticalBlock"] > div:has(.bottom-shape) {
-        margin-top: -30px;
     }
 
     .login-card {
@@ -152,7 +140,7 @@ st.markdown("""
         text-align: center;
         color: #1B2A4A !important;
         font-size: 28px;
-        font-weight: 700;
+        font-weight: 800 !important;
         margin-bottom: 5px;
     }
 
@@ -163,7 +151,6 @@ st.markdown("""
         margin-bottom: 20px;
     }
 
-    /* FIX: previously missing — used throughout student_dashboard() */
     .section-card {
         background: white;
         border: 1px solid #E0E0E0;
