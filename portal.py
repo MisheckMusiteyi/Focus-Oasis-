@@ -516,7 +516,7 @@ def student_dashboard():
         st.markdown(f"""
         <div style="text-align:center;margin-top:10px;">
             <img src="{SCHOOL_LOGO_URL}"
-                 style="width:200px;height:200px;object-fit:contain;
+                 style="width:300px;height:100px;object-fit:contain;
                         display:block;margin:0 auto;">
         </div>
         """, unsafe_allow_html=True)
