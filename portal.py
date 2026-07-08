@@ -144,7 +144,7 @@ def load_data(sheet_name):
         try:
             connect_to_sheets.clear()
             client = connect_to_sheets()
-            sheet = client.open("Focus Oasis Dashboard").worksheet(sheet_name)
+            sheet = client.open("Focus Oasis Foundation").worksheet(sheet_name)
             return pd.DataFrame(sheet.get_all_records())
         except Exception as e:
             if attempt < 2:
@@ -155,7 +155,7 @@ def load_data(sheet_name):
 def update_cell(sheet_name, row, col, value):
     connect_to_sheets.clear()
     client = connect_to_sheets()
-    sheet = client.open("Focus Oasis Dashboard").worksheet(sheet_name)
+    sheet = client.open("Focus Oasis Foundation").worksheet(sheet_name)
     sheet.update_cell(row, col, value)
 
 # ============================================
@@ -174,7 +174,7 @@ def get_student_profile(username):
 def save_student_profile(username, display_name, photo_b64=""):
     connect_to_sheets.clear()
     client = connect_to_sheets()
-    sheet = client.open("Focus Oasis Dashboard").worksheet("Student Profiles")
+    sheet = client.open("Focus Oasis Foundation").worksheet("Student Profiles")
     records = sheet.get_all_records()
     
     if not display_name:
