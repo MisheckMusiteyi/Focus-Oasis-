@@ -126,19 +126,30 @@ st.markdown("""
 
     /* Fix overlapping text inside the file uploader dropzone — the
        global serif font override changes text metrics enough that
-       Streamlit's default fixed-height layout can overlap lines */
+       Streamlit's default fixed-height layout can overlap lines,
+       and inside a narrow st.dialog the browse button can overlap
+       the instructions text too. Force everything into a column. */
     [data-testid="stFileUploaderDropzone"] {
-        min-height: 88px !important;
-        height: auto !important;
-        padding: 14px 16px !important;
-    }
-    [data-testid="stFileUploaderDropzoneInstructions"] {
         display: flex !important;
         flex-direction: column !important;
+        align-items: flex-start !important;
         justify-content: center !important;
+        height: auto !important;
+        min-height: 120px !important;
+        padding: 16px !important;
+        gap: 10px !important;
+    }
+    [data-testid="stFileUploaderDropzoneInstructions"] {
+        position: static !important;
+        display: flex !important;
+        flex-direction: column !important;
         gap: 4px !important;
         line-height: 1.4 !important;
         overflow: visible !important;
+        width: 100% !important;
+    }
+    [data-testid="stFileUploaderDropzoneInstructions"] > div {
+        position: static !important;
     }
     [data-testid="stFileUploaderDropzoneInstructions"] span,
     [data-testid="stFileUploaderDropzoneInstructions"] small {
@@ -146,6 +157,10 @@ st.markdown("""
         position: static !important;
         white-space: normal !important;
         overflow: visible !important;
+    }
+    [data-testid="stFileUploaderDropzone"] button {
+        position: static !important;
+        margin-top: 6px !important;
     }
 
     /* ── Login Page Header Banner (navy, holds logo + white title) ── */
