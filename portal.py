@@ -28,20 +28,32 @@ st.markdown("""
 <style>
     * { font-family: 'Georgia', 'Times New Roman', serif !important; }
 
-    /* Streamlit renders several of its own controls — like the
-       show/hide toggle on password fields — using an icon font, where
-       a word such as "visibility" is a ligature name that should
-       display as an eye glyph, not literal text. The global serif
-       override above breaks that ligature and shows the raw word.
-       Restore the icon font specifically for those elements. */
-    [class*="material-icons"],
-    [class*="material-symbols"],
-    [data-testid="stTextInputRevealButton"] span,
-    [data-testid="stTextInputRevealButton"] i,
-    [data-testid="baseButton-headerNoPadding"] span[class*="icon"],
-    span[class*="eyeIcon"] {
-        font-family: 'Material Symbols Rounded', 'Material Symbols Outlined',
-                     'Material Icons Round', 'Material Icons', sans-serif !important;
+    /* Streamlit's password show/hide toggle has been rendering as
+       literal text (e.g. "visibility") instead of an eye icon, because
+       the global serif override above breaks whatever icon font/ligature
+       it normally relies on. Rather than guess Streamlit's exact
+       internal class names (which vary by version), we take the same
+       defensive approach used for the file uploader: hide any raw
+       text/icon Streamlit renders inside the toggle, and draw our own
+       simple eye glyph on top instead. This works regardless of
+       Streamlit's internal markup. */
+    [data-testid*="RevealButton"] {
+        position: relative !important;
+        font-size: 0 !important;
+        color: transparent !important;
+    }
+    [data-testid*="RevealButton"] * {
+        font-size: 0 !important;
+        color: transparent !important;
+    }
+    [data-testid*="RevealButton"]::before {
+        content: "\\1F441";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 16px !important;
+        color: #1B2A4A !important;
     }
 
     .stApp {
