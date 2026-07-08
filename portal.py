@@ -129,23 +129,33 @@ st.markdown("""
        Streamlit's default fixed-height layout can overlap lines,
        and inside a narrow st.dialog the browse button can overlap
        the instructions text too. Force everything into a column. */
+    /* Streamlit's built-in dropzone markup (icon + instructions text +
+       "Browse files" button) has been overlapping itself in narrow
+       containers like st.dialog, in a way that keeps changing shape
+       across attempts to patch its internal structure directly. Instead
+       of guessing at Streamlit's internal DOM, we take a version-proof
+       approach: hide every built-in visual element inside the dropzone
+       (opacity 0, so they still occupy space and stay functional), then
+       draw a single clean label ourselves with ::before/::after. The
+       real <input type="file"> stays on top, invisible but clickable,
+       so click-to-browse and drag-and-drop both keep working exactly
+       as before — only the visible text/icon changes. */
     [data-testid="stFileUploaderDropzone"] {
         position: relative !important;
         display: flex !important;
         flex-direction: column !important;
-        align-items: flex-start !important;
+        align-items: center !important;
         justify-content: center !important;
         height: auto !important;
-        min-height: 120px !important;
+        min-height: 110px !important;
         padding: 16px !important;
-        gap: 10px !important;
         overflow: hidden !important;
+        text-align: center !important;
     }
-    /* The native <input type=file> is what Streamlit uses to open the OS
-       file picker. Normally it's hidden off-screen, but inside a narrow
-       st.dialog it can end up visible and overlapping the styled label
-       (the double "upload upload" + text-cursor look). Force it to stay
-       fully invisible while still covering the dropzone so clicks work. */
+    [data-testid="stFileUploaderDropzone"] > *:not(input) {
+        opacity: 0 !important;
+        pointer-events: none !important;
+    }
     [data-testid="stFileUploaderDropzone"] input[type="file"] {
         position: absolute !important;
         top: 0 !important;
@@ -155,35 +165,21 @@ st.markdown("""
         opacity: 0 !important;
         cursor: pointer !important;
         z-index: 3 !important;
-        font-size: 0 !important;
-        color: transparent !important;
     }
-    [data-testid="stFileUploaderDropzoneInstructions"] {
-        position: relative !important;
-        z-index: 1 !important;
-        display: flex !important;
-        flex-direction: column !important;
-        gap: 4px !important;
-        line-height: 1.4 !important;
-        overflow: visible !important;
-        width: 100% !important;
-        pointer-events: none !important;
+    [data-testid="stFileUploaderDropzone"]::before {
+        content: "Click or drag a photo here to upload";
+        display: block;
+        color: #1B2A4A;
+        font-weight: 600;
+        font-size: 15px;
+        padding: 0 8px;
     }
-    [data-testid="stFileUploaderDropzoneInstructions"] > div {
-        position: static !important;
-    }
-    [data-testid="stFileUploaderDropzoneInstructions"] span,
-    [data-testid="stFileUploaderDropzoneInstructions"] small {
-        display: block !important;
-        position: static !important;
-        white-space: normal !important;
-        overflow: visible !important;
-    }
-    [data-testid="stFileUploaderDropzone"] button {
-        position: relative !important;
-        z-index: 1 !important;
-        margin-top: 6px !important;
-        pointer-events: none !important;
+    [data-testid="stFileUploaderDropzone"]::after {
+        content: "PNG or JPG • up to 200MB";
+        display: block;
+        color: #888;
+        font-size: 12px;
+        margin-top: 6px;
     }
 
     /* ── Login Page Header Banner (navy, holds logo + white title) ── */
@@ -367,7 +363,7 @@ def save_student_profile(username, display_name, photo_b64=""):
     if not display_name:
         display_name = username
     if len(photo_b64) > 45000:
-        st.warning("Image too large. Please use an image with a smaller size.")
+        st.warning("Image too large. Please use a smaller image.")
         photo_b64 = ""
 
     row_data = [username, display_name, photo_b64]
