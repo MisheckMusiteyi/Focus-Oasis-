@@ -121,8 +121,19 @@ def connect_to_sheets():
     scope = ["https://spreadsheets.google.com/feeds",
              "https://www.googleapis.com/auth/drive"]
     try:
-        creds_dict = dict(st.secrets)
-        creds_dict.pop("admin_password", None)
+        creds_dict = {
+            "type": st.secrets["type"],
+            "project_id": st.secrets["project_id"],
+            "private_key_id": st.secrets["private_key_id"],
+            "private_key": st.secrets["private_key"],
+            "client_email": st.secrets["client_email"],
+            "client_id": st.secrets["client_id"],
+            "auth_uri": st.secrets["auth_uri"],
+            "token_uri": st.secrets["token_uri"],
+            "auth_provider_x509_cert_url": st.secrets["auth_provider_x509_cert_url"],
+            "client_x509_cert_url": st.secrets["client_x509_cert_url"],
+            "universe_domain": st.secrets.get("universe_domain", "googleapis.com")
+        }
         creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
     except Exception:
         creds = ServiceAccountCredentials.from_json_keyfile_name("credentials.json", scope)
@@ -131,17 +142,18 @@ def connect_to_sheets():
 def load_data(sheet_name):
     for attempt in range(3):
         try:
+            connect_to_sheets.clear()
             client = connect_to_sheets()
             sheet = client.open("Focus Oasis Dashboard").worksheet(sheet_name)
             return pd.DataFrame(sheet.get_all_records())
         except Exception as e:
-            connect_to_sheets.clear()
             if attempt < 2:
                 time.sleep(2)
             else:
                 raise e
 
 def update_cell(sheet_name, row, col, value):
+    connect_to_sheets.clear()
     client = connect_to_sheets()
     sheet = client.open("Focus Oasis Dashboard").worksheet(sheet_name)
     sheet.update_cell(row, col, value)
@@ -160,6 +172,7 @@ def get_student_profile(username):
     return {"Username": username, "Display Name": "", "Profile Photo": ""}
 
 def save_student_profile(username, display_name, photo_b64=""):
+    connect_to_sheets.clear()
     client = connect_to_sheets()
     sheet = client.open("Focus Oasis Dashboard").worksheet("Student Profiles")
     records = sheet.get_all_records()
