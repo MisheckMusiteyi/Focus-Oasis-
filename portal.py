@@ -106,12 +106,39 @@ st.markdown("""
         border-left: 4px solid #f44336 !important;
     }
 
-    /* ── Login Page Shapes ── */
+    /* ── Login Page Header Banner (navy, holds logo + white title) ── */
     .top-shape {
         width: 100%;
-        height: 140px;
         background-color: #1B2A4A;
-        margin-bottom: 20px;
+        padding: 35px 20px 45px 20px;
+        margin-bottom: 30px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .top-shape img.school-logo {
+        width: 72px;
+        height: 72px;
+        object-fit: contain;
+        margin-bottom: 14px;
+    }
+
+    .top-shape .school-title-white {
+        text-align: center;
+        color: #FFFFFF !important;
+        font-size: 34px;
+        font-weight: 800 !important;
+        margin: 0;
+        line-height: 1.15;
+    }
+
+    .top-shape .school-subtitle-white {
+        text-align: center;
+        color: #BFD9F0 !important;
+        font-size: 16px;
+        margin-top: 6px;
     }
 
     .bottom-shape {
@@ -132,17 +159,6 @@ st.markdown("""
         color: white !important;
     }
 
-    .login-card {
-        background: white;
-        border-radius: 12px;
-        box-shadow: 0 8px 30px rgba(0,0,0,0.08);
-        padding: 40px 30px;
-        margin: 0 auto;
-        max-width: 450px;
-        position: relative;
-        z-index: 1;
-    }
-
     /* Faint watermark logo sitting behind the login page content */
     .login-watermark {
         position: fixed;
@@ -156,23 +172,6 @@ st.markdown("""
         opacity: 0.06;
         z-index: 0;
         pointer-events: none;
-    }
-
-    /* Bigger, bolder institution title on the login page */
-    .school-title {
-        text-align: center;
-        color: #1B2A4A !important;
-        font-size: 42px;
-        font-weight: 800 !important;
-        margin-bottom: 5px;
-        line-height: 1.15;
-    }
-
-    .school-subtitle {
-        text-align: center;
-        color: #2E86C1;
-        font-size: 18px;
-        margin-bottom: 20px;
     }
 
     /* ── Dashboard Card Boxes ── */
@@ -304,10 +303,13 @@ def resize_image_for_storage(image_bytes):
     img = Image.open(BytesIO(image_bytes))
     if img.mode in ('RGBA', 'P'):
         img = img.convert('RGB')
+    # Preserve the original aspect ratio — just cap the longest side
+    # instead of cropping to a square, so the full photo is kept.
+    max_side = 300
     w, h = img.size
-    side = min(w, h)
-    img = img.crop(((w-side)//2, (h-side)//2, (w+side)//2, (h+side)//2))
-    img = img.resize((200, 200), Image.LANCZOS)
+    scale = min(max_side / w, max_side / h, 1.0)
+    if scale < 1.0:
+        img = img.resize((int(w * scale), int(h * scale)), Image.LANCZOS)
     buf = BytesIO()
     img.save(buf, format='JPEG', quality=60, optimize=True)
     return buf.getvalue()
@@ -321,12 +323,13 @@ def get_initials(full_name):
 def display_student_photo(photo_b64=None, size=120, name=""):
     if photo_b64:
         st.markdown(f"""
-            <div style="width:{size}px;height:{size}px;border-radius:10px;
-                        overflow:hidden;margin:0 auto;
-                        border:1px solid #D5DCE3;">
+            <div style="max-width:{size}px;max-height:{size}px;
+                        margin:0 auto;display:flex;
+                        align-items:center;justify-content:center;">
                 <img src="data:image/jpeg;base64,{photo_b64}"
-                style="width:100%;height:100%;object-fit:cover;
-                       object-position:center;display:block;">
+                style="max-width:{size}px;max-height:{size}px;
+                       width:auto;height:auto;object-fit:contain;
+                       display:block;border-radius:8px;">
             </div>
         """, unsafe_allow_html=True)
     else:
@@ -407,18 +410,19 @@ def login_page():
     # Faint watermark logo, sent behind all other login page content
     st.markdown(f'<img src="{SCHOOL_LOGO_URL}" class="login-watermark">', unsafe_allow_html=True)
 
-    # Top decorative shape
-    st.markdown('<div class="top-shape" style="position:relative;z-index:1;"></div>', unsafe_allow_html=True)
+    # Navy header banner: small logo + institution name/subtitle in white,
+    # all in ONE markdown call so it renders as a single solid block
+    st.markdown(f"""
+        <div class="top-shape">
+            <img src="{SCHOOL_LOGO_URL}" class="school-logo">
+            <div class="school-title-white">Focus Oasis Foundation</div>
+            <div class="school-subtitle-white">Student & Admin Portal</div>
+        </div>
+    """, unsafe_allow_html=True)
 
-    # Institution name
-    st.markdown('<div class="school-title" style="position:relative;z-index:1;">Focus Oasis Foundation</div>', unsafe_allow_html=True)
-    st.markdown('<div class="school-subtitle" style="position:relative;z-index:1;">Student & Admin Portal</div>', unsafe_allow_html=True)
-
-    # Login card
+    # Login fields (no wrapping card box — sit directly on the page)
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        st.markdown('<div class="login-card">', unsafe_allow_html=True)
-
         login_type = st.radio("Login as:", ["Student", "Admin"], horizontal=True)
 
         if login_type == "Student":
@@ -458,8 +462,6 @@ def login_page():
                     st.rerun()
                 else:
                     st.error("Invalid admin username or password.")
-
-        st.markdown('</div>', unsafe_allow_html=True)
 
     # Bottom decorative shape with footer
     st.markdown("""
