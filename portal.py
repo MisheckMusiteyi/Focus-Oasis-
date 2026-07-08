@@ -23,18 +23,15 @@ st.markdown("""
 <style>
     * { font-family: 'Georgia', 'Times New Roman', serif !important; }
     
-    /* Background */
     .stApp { 
         background-color: #FFFFFF !important; 
     }
     
-    /* Headers - Dark navy blue */
     h1, h2, h3 { 
         color: #1B2A4A !important; 
         font-weight: 700 !important; 
     }
     
-    /* Buttons - Dark navy blue with sky blue hover */
     .stButton > button {
         background-color: #1B2A4A !important;
         color: white !important;
@@ -47,7 +44,6 @@ st.markdown("""
         background-color: #2E86C1 !important;
     }
     
-    /* Metrics */
     [data-testid="stMetricValue"] {
         color: #1B2A4A !important;
         font-weight: 700 !important;
@@ -56,7 +52,6 @@ st.markdown("""
         color: #2E86C1 !important;
     }
     
-    /* Sidebar - Dark navy blue */
     [data-testid="stSidebar"] {
         background-color: #1B2A4A !important;
     }
@@ -76,34 +71,28 @@ st.markdown("""
         border: 1px solid #2E86C1 !important;
     }
     
-    /* Dividers */
     hr { 
         border-color: #2E86C1; 
     }
     
-    /* Input focus */
     .stTextInput input:focus, .stDateInput input:focus {
         border-color: #2E86C1 !important;
         box-shadow: 0 0 0 2px rgba(46,134,193,0.2) !important;
     }
     
-    /* Radio buttons */
     div[data-testid="stRadio"] input[type="radio"] {
         accent-color: #2E86C1 !important;
     }
     
-    /* Tabs */
     .stTabs [aria-selected="true"] {
         background-color: #1B2A4A !important;
         color: white !important;
     }
     
-    /* Expanders */
     [data-testid="stExpander"] summary {
         border-left: 3px solid #2E86C1 !important;
     }
     
-    /* Success/Error messages */
     .stSuccess {
         border-left: 4px solid #4CAF50 !important;
     }
@@ -322,7 +311,6 @@ def student_dashboard():
     display_name = profile.get("Display Name", "") or st.session_state.student_name
     
     students_df = load_data("Students")
-    fee_structure_df = load_data("Fee Structure")
     fee_payments_df = load_data("Fee Payments")
     performance_df = load_data("Performance")
     
@@ -331,16 +319,12 @@ def student_dashboard():
     if len(student_info) > 0:
         student_row = student_info.iloc[0]
         student_class = student_row.get('Class', st.session_state.student_class)
-        class_fee = fee_structure_df[fee_structure_df['Class'] == student_class]['Monthly Fee'].sum()
-        total_paid = fee_payments_df[fee_payments_df['Name of Student'] == st.session_state.student_name]['Amount Paid'].sum()
-        balance = class_fee - total_paid
+        total_paid = fee_payments_df[fee_payments_df['Student Name'] == st.session_state.student_name]['Amount Paid'].sum()
     else:
         student_class = st.session_state.student_class
-        class_fee = 0
         total_paid = 0
-        balance = 0
     
-    my_performance = performance_df[performance_df['Student Name'] == st.session_state.student_name]
+    my_performance = performance_df[performance_df['Student Name'] == st.session_state.student_name] if len(performance_df) > 0 else pd.DataFrame()
     
     # Header
     col1, col2, col3 = st.columns([1, 3, 1])
@@ -368,13 +352,11 @@ def student_dashboard():
         
         st.divider()
         st.subheader("Fee Summary")
-        col1, col2, col3 = st.columns(3)
-        with col1: st.metric("Fees Charged", f"${class_fee:,.0f}")
-        with col2: st.metric("Total Paid", f"${total_paid:,.0f}")
-        with col3: st.metric("Balance Owing", f"${balance:,.0f}",
-                            delta="Paid Full" if balance <= 0 else "Outstanding")
+        col1, col2 = st.columns(2)
+        with col1: st.metric("Total Paid", f"${total_paid:,.0f}")
+        with col2: st.metric("Status", "Good Standing" if total_paid > 0 else "No Payments")
         
-        my_payments = fee_payments_df[fee_payments_df['Name of Student'] == st.session_state.student_name]
+        my_payments = fee_payments_df[fee_payments_df['Student Name'] == st.session_state.student_name]
         if len(my_payments) > 0:
             st.divider()
             st.subheader("Payment History")
