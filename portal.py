@@ -42,6 +42,33 @@ st.markdown("""
                      'Material Symbols Sharp', sans-serif !important;
     }
 
+    /* Fallback in case the rule above doesn't match this Streamlit
+       version: "stTextInputRootElement" is the stable wrapper Streamlit
+       puts around a text input plus its optional reveal-password
+       button. Regular text inputs have no <button> in there at all, so
+       targeting "any button inside this wrapper" safely isolates just
+       the password toggle without needing to know its own testid/class.
+       We hide whatever raw text/icon it renders and draw a plain eye
+       glyph on top instead, so it can't show literal words again. */
+    [data-testid="stTextInputRootElement"] button {
+        position: relative !important;
+        font-size: 0 !important;
+        color: transparent !important;
+    }
+    [data-testid="stTextInputRootElement"] button * {
+        font-size: 0 !important;
+        color: transparent !important;
+    }
+    [data-testid="stTextInputRootElement"] button::before {
+        content: "\\1F441";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 15px !important;
+        color: #1B2A4A !important;
+    }
+
     .stApp {
         background-color: #FFFFFF !important;
     }
