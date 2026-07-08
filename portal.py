@@ -124,6 +124,30 @@ st.markdown("""
         border-left: 4px solid #f44336 !important;
     }
 
+    /* Fix overlapping text inside the file uploader dropzone — the
+       global serif font override changes text metrics enough that
+       Streamlit's default fixed-height layout can overlap lines */
+    [data-testid="stFileUploaderDropzone"] {
+        min-height: 88px !important;
+        height: auto !important;
+        padding: 14px 16px !important;
+    }
+    [data-testid="stFileUploaderDropzoneInstructions"] {
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        gap: 4px !important;
+        line-height: 1.4 !important;
+        overflow: visible !important;
+    }
+    [data-testid="stFileUploaderDropzoneInstructions"] span,
+    [data-testid="stFileUploaderDropzoneInstructions"] small {
+        display: block !important;
+        position: static !important;
+        white-space: normal !important;
+        overflow: visible !important;
+    }
+
     /* ── Login Page Header Banner (navy, holds logo + white title) ── */
     .top-shape {
         width: 100%;
@@ -267,20 +291,21 @@ def connect_to_sheets():
     return gspread.authorize(creds)
 
 def load_data(sheet_name):
+    client = connect_to_sheets()
     for attempt in range(3):
         try:
-            connect_to_sheets.clear()
-            client = connect_to_sheets()
             sheet = client.open("Focus Oasis Foundation").worksheet(sheet_name)
             return pd.DataFrame(sheet.get_all_records())
         except Exception as e:
             if attempt < 2:
-                time.sleep(2)
+                # Only reconnect on an actual failure, not on every call
+                connect_to_sheets.clear()
+                client = connect_to_sheets()
+                time.sleep(1)
             else:
                 raise e
 
 def update_cell(sheet_name, row, col, value):
-    connect_to_sheets.clear()
     client = connect_to_sheets()
     sheet = client.open("Focus Oasis Foundation").worksheet(sheet_name)
     sheet.update_cell(row, col, value)
@@ -299,10 +324,8 @@ def get_student_profile(username):
     return {"Username": username, "Display Name": "", "Profile Photo": ""}
 
 def save_student_profile(username, display_name, photo_b64=""):
-    connect_to_sheets.clear()
     client = connect_to_sheets()
     sheet = client.open("Focus Oasis Foundation").worksheet("Student Profiles")
-    records = sheet.get_all_records()
 
     if not display_name:
         display_name = username
@@ -311,11 +334,17 @@ def save_student_profile(username, display_name, photo_b64=""):
         photo_b64 = ""
 
     row_data = [username, display_name, photo_b64]
-    for idx, row in enumerate(records, start=2):
-        if row["Username"] == username:
-            sheet.update(f"A{idx}:C{idx}", [row_data])
-            return
-    sheet.append_row(row_data)
+
+    # Targeted lookup instead of fetching every row in the sheet
+    try:
+        cell = sheet.find(username, in_column=1)
+    except Exception:
+        cell = None
+
+    if cell:
+        sheet.update(f"A{cell.row}:C{cell.row}", [row_data])
+    else:
+        sheet.append_row(row_data)
 
 def resize_image_for_storage(image_bytes):
     img = Image.open(BytesIO(image_bytes))
@@ -394,11 +423,12 @@ def profile_settings_dialog(username, profile):
     col1, col2 = st.columns(2)
     with col1:
         if st.button("Save", use_container_width=True):
-            photo_b64 = profile.get("Profile Photo", "")
-            if new_photo:
-                compressed = resize_image_for_storage(new_photo.getvalue())
-                photo_b64 = base64.b64encode(compressed).decode()
-            save_student_profile(username, new_name, photo_b64)
+            with st.spinner("Saving profile..."):
+                photo_b64 = profile.get("Profile Photo", "")
+                if new_photo:
+                    compressed = resize_image_for_storage(new_photo.getvalue())
+                    photo_b64 = base64.b64encode(compressed).decode()
+                save_student_profile(username, new_name, photo_b64)
             st.success("Profile updated!")
             st.rerun()
     with col2:
