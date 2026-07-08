@@ -130,6 +130,7 @@ st.markdown("""
        and inside a narrow st.dialog the browse button can overlap
        the instructions text too. Force everything into a column. */
     [data-testid="stFileUploaderDropzone"] {
+        position: relative !important;
         display: flex !important;
         flex-direction: column !important;
         align-items: flex-start !important;
@@ -138,15 +139,35 @@ st.markdown("""
         min-height: 120px !important;
         padding: 16px !important;
         gap: 10px !important;
+        overflow: hidden !important;
+    }
+    /* The native <input type=file> is what Streamlit uses to open the OS
+       file picker. Normally it's hidden off-screen, but inside a narrow
+       st.dialog it can end up visible and overlapping the styled label
+       (the double "upload upload" + text-cursor look). Force it to stay
+       fully invisible while still covering the dropzone so clicks work. */
+    [data-testid="stFileUploaderDropzone"] input[type="file"] {
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        opacity: 0 !important;
+        cursor: pointer !important;
+        z-index: 3 !important;
+        font-size: 0 !important;
+        color: transparent !important;
     }
     [data-testid="stFileUploaderDropzoneInstructions"] {
-        position: static !important;
+        position: relative !important;
+        z-index: 1 !important;
         display: flex !important;
         flex-direction: column !important;
         gap: 4px !important;
         line-height: 1.4 !important;
         overflow: visible !important;
         width: 100% !important;
+        pointer-events: none !important;
     }
     [data-testid="stFileUploaderDropzoneInstructions"] > div {
         position: static !important;
@@ -159,8 +180,10 @@ st.markdown("""
         overflow: visible !important;
     }
     [data-testid="stFileUploaderDropzone"] button {
-        position: static !important;
+        position: relative !important;
+        z-index: 1 !important;
         margin-top: 6px !important;
+        pointer-events: none !important;
     }
 
     /* ── Login Page Header Banner (navy, holds logo + white title) ── */
