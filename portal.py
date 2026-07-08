@@ -5,7 +5,7 @@ import pandas as pd
 import base64
 import time
 from io import BytesIO
-from datetime import date
+from datetime import datetime, date
 from PIL import Image
 
 # ============================================
@@ -101,43 +101,84 @@ st.markdown("""
         border-left: 4px solid #f44336 !important;
     }
 
-    /* Footer */
-    .footer {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
+    /* ── Login Page Shapes ── */
+    .top-shape {
+        width: 100%;
+        height: 200px;
         background-color: #1B2A4A;
+        border-bottom-left-radius: 50% 60px;
+        border-bottom-right-radius: 50% 60px;
+        margin-bottom: -30px;
+    }
+
+    .bottom-shape {
+        width: 100%;
+        height: 120px;
+        background-color: #1B2A4A;
+        border-top-left-radius: 50% 60px;
+        border-top-right-radius: 50% 60px;
+        margin-top: -30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         color: white;
-        text-align: center;
-        padding: 12px;
         font-size: 14px;
-        z-index: 100;
+        flex-direction: column;
     }
 
-    /* Section cards */
-    .section-card {
-        background-color: #ffffff;
-        border: 1px solid #e0e0e0;
-        border-radius: 8px;
-        padding: 20px;
-        margin-bottom: 16px;
-        border-left: 4px solid #2E86C1;
+    .bottom-shape p {
+        margin: 2px 0;
+        color: white !important;
     }
-    .section-card h4 {
+
+    /* FIX: collapse Streamlit's default block spacing around the shapes */
+    div[data-testid="stVerticalBlock"] > div:has(.top-shape) {
+        margin-bottom: -30px;
+    }
+    div[data-testid="stVerticalBlock"] > div:has(.bottom-shape) {
+        margin-top: -30px;
+    }
+
+    .login-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+        padding: 40px 30px;
+        margin: 0 auto;
+        max-width: 450px;
+    }
+
+    .school-title {
+        text-align: center;
         color: #1B2A4A !important;
-        margin-top: 0;
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 5px;
     }
 
-    /* Detail rows */
+    .school-subtitle {
+        text-align: center;
+        color: #2E86C1;
+        font-size: 16px;
+        margin-bottom: 20px;
+    }
+
+    /* FIX: previously missing — used throughout student_dashboard() */
+    .section-card {
+        background: white;
+        border: 1px solid #E0E0E0;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
     .detail-row {
         display: flex;
         justify-content: space-between;
         padding: 8px 0;
-        border-bottom: 1px solid #f0f0f0;
+        border-bottom: 1px solid #F0F0F0;
     }
     .detail-label {
-        color: #666;
+        color: #2E86C1;
         font-weight: 600;
     }
     .detail-value {
@@ -146,8 +187,6 @@ st.markdown("""
     }
 </style>
 """, unsafe_allow_html=True)
-
-SPREADSHEET_NAME = "Focus Oasis Foundation"
 
 # ============================================
 # GOOGLE SHEETS SETUP
@@ -175,46 +214,23 @@ def connect_to_sheets():
         creds = ServiceAccountCredentials.from_json_keyfile_name("credentials.json", scope)
     return gspread.authorize(creds)
 
-
-@st.cache_resource
-def get_spreadsheet():
-    # Cached alongside connect_to_sheets so the same open spreadsheet handle
-    # is reused instead of re-opening it on every single read/write.
-    return connect_to_sheets().open(SPREADSHEET_NAME)
-
-
-@st.cache_data(ttl=60)
-def get_worksheet_titles():
-    # Cached for a minute so pages that check "does this optional sheet
-    # exist" (Performance, Fee Structure, etc.) don't make a fresh API
-    # call to list worksheets every time they render.
-    return [ws.title for ws in get_spreadsheet().worksheets()]
-
-
-def load_data(sheet_name, optional=False):
-    """Load a worksheet as a DataFrame.
-
-    If optional=True and the sheet doesn't exist, returns an empty
-    DataFrame instead of raising, so pages relying on not-yet-created
-    sheets (e.g. Performance) degrade gracefully.
-    """
-    if optional and sheet_name not in get_worksheet_titles():
-        return pd.DataFrame()
-
-    last_error = None
+def load_data(sheet_name):
     for attempt in range(3):
         try:
-            sheet = get_spreadsheet().worksheet(sheet_name)
+            connect_to_sheets.clear()
+            client = connect_to_sheets()
+            sheet = client.open("Focus Oasis Foundation").worksheet(sheet_name)
             return pd.DataFrame(sheet.get_all_records())
         except Exception as e:
-            last_error = e
             if attempt < 2:
                 time.sleep(2)
-    raise last_error
-
+            else:
+                raise e
 
 def update_cell(sheet_name, row, col, value):
-    sheet = get_spreadsheet().worksheet(sheet_name)
+    connect_to_sheets.clear()
+    client = connect_to_sheets()
+    sheet = client.open("Focus Oasis Foundation").worksheet(sheet_name)
     sheet.update_cell(row, col, value)
 
 # ============================================
@@ -222,18 +238,18 @@ def update_cell(sheet_name, row, col, value):
 # ============================================
 def get_student_profile(username):
     try:
-        df = load_data("Student Profiles", optional=True)
-        if len(df) == 0:
-            return {"Username": username, "Display Name": "", "Profile Photo": ""}
+        df = load_data("Student Profiles")
         user = df[df["Username"] == username]
         if len(user) > 0:
             return user.iloc[0].to_dict()
-    except Exception:
+    except:
         pass
     return {"Username": username, "Display Name": "", "Profile Photo": ""}
 
 def save_student_profile(username, display_name, photo_b64=""):
-    sheet = get_spreadsheet().worksheet("Student Profiles")
+    connect_to_sheets.clear()
+    client = connect_to_sheets()
+    sheet = client.open("Focus Oasis Foundation").worksheet("Student Profiles")
     records = sheet.get_all_records()
 
     if not display_name:
@@ -246,10 +262,8 @@ def save_student_profile(username, display_name, photo_b64=""):
     for idx, row in enumerate(records, start=2):
         if row["Username"] == username:
             sheet.update(f"A{idx}:C{idx}", [row_data])
-            get_worksheet_titles.clear()
             return
     sheet.append_row(row_data)
-    get_worksheet_titles.clear()
 
 def resize_image_for_storage(image_bytes):
     img = Image.open(BytesIO(image_bytes))
@@ -264,11 +278,9 @@ def resize_image_for_storage(image_bytes):
     return buf.getvalue()
 
 def get_initials(full_name):
-    if not full_name:
-        return "?"
+    if not full_name: return "?"
     parts = [p for p in full_name.strip().split() if p]
-    if not parts:
-        return "?"
+    if not parts: return "?"
     return parts[0][0].upper() if len(parts) == 1 else (parts[0][0] + parts[-1][0]).upper()
 
 def display_student_photo(photo_b64=None, size=120, name=""):
@@ -290,13 +302,6 @@ def display_student_photo(photo_b64=None, size=120, name=""):
             {initials}
             </div>
         """, unsafe_allow_html=True)
-
-def detail_row(label, value):
-    st.markdown(
-        f'<div class="detail-row"><span class="detail-label">{label}</span>'
-        f'<span class="detail-value">{value}</span></div>',
-        unsafe_allow_html=True
-    )
 
 # ============================================
 # DIALOG: Profile Settings
@@ -324,34 +329,41 @@ def profile_settings_dialog(username, profile):
 # ============================================
 # SESSION STATE
 # ============================================
-DEFAULT_SESSION_STATE = {
-    "logged_in": False,
-    "user_type": None,
-    "student_name": None,
-    "username": None,
-    "student_class": None,
-    "current_page": "My Dashboard",
-}
-for key, default in DEFAULT_SESSION_STATE.items():
-    if key not in st.session_state:
-        st.session_state[key] = default
+if 'logged_in' not in st.session_state:
+    st.session_state.logged_in = False
+if 'user_type' not in st.session_state:
+    st.session_state.user_type = None
+if 'student_name' not in st.session_state:
+    st.session_state.student_name = None
+if 'username' not in st.session_state:
+    st.session_state.username = None
+if 'student_class' not in st.session_state:
+    st.session_state.student_class = None
+if 'current_page' not in st.session_state:
+    st.session_state.current_page = "My Dashboard"
 
 # ============================================
 # LOGIN PAGE
 # ============================================
 def login_page():
+    # Top decorative shape
+    st.markdown('<div class="top-shape"></div>', unsafe_allow_html=True)
+
+    # Institution name
+    st.markdown('<div class="school-title">Focus Oasis Foundation</div>', unsafe_allow_html=True)
+    st.markdown('<div class="school-subtitle">Student & Admin Portal</div>', unsafe_allow_html=True)
+
+    # Login card
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        st.markdown("<h1 style='text-align:center;'>Focus Oasis Foundation</h1>", unsafe_allow_html=True)
-        st.markdown("<p style='text-align:center;color:#2E86C1;'>Student & Admin Portal</p>", unsafe_allow_html=True)
-        st.divider()
+        st.markdown('<div class="login-card">', unsafe_allow_html=True)
 
         login_type = st.radio("Login as:", ["Student", "Admin"], horizontal=True)
 
         if login_type == "Student":
             username = st.text_input("Username")
             password = st.text_input("Password", type="password")
-            if st.button("Login", use_container_width=True):
+            if st.button("Login", use_container_width=True, key="student_login"):
                 logins_df = load_data("Student Logins")
                 match = logins_df[
                     (logins_df['Username'] == username) &
@@ -372,7 +384,7 @@ def login_page():
         else:
             admin_username = st.text_input("Admin Username")
             admin_password = st.text_input("Admin Password", type="password")
-            if st.button("Login", use_container_width=True):
+            if st.button("Login", use_container_width=True, key="admin_login"):
                 admin_logins_df = load_data("Admin Logins")
                 match = admin_logins_df[
                     (admin_logins_df['Username'] == admin_username) &
@@ -386,6 +398,16 @@ def login_page():
                 else:
                     st.error("Invalid admin username or password.")
 
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    # Bottom decorative shape with footer
+    st.markdown("""
+        <div class="bottom-shape">
+            <p>© 2026 Focus Oasis Foundation</p>
+            <p style="font-size:12px;color:#2E86C1;">All Rights Reserved</p>
+        </div>
+    """, unsafe_allow_html=True)
+
 # ============================================
 # STUDENT DASHBOARD
 # ============================================
@@ -393,52 +415,47 @@ def student_dashboard():
     profile = get_student_profile(st.session_state.username)
     display_name = profile.get("Display Name", "") or st.session_state.student_name
 
-    # Load core data
     students_df = load_data("Students")
     fee_payments_df = load_data("Fee Payments")
 
-    # Get student info
+    # Try loading Performance tab gracefully
+    try:
+        performance_df = load_data("Performance")
+    except:
+        performance_df = pd.DataFrame()
+
     student_info = students_df[students_df['Student Name'] == st.session_state.student_name]
-    has_student_row = len(student_info) > 0
-    student_row = student_info.iloc[0] if has_student_row else pd.Series(dtype=object)
 
-    def field(name, default="N/A"):
-        return student_row.get(name, default) if has_student_row else default
-
-    if has_student_row:
+    if len(student_info) > 0:
+        student_row = student_info.iloc[0]
         student_class = student_row.get('Class', st.session_state.student_class)
 
-        # Fee calculations
         all_payments = fee_payments_df[fee_payments_df['Student Name'] == st.session_state.student_name]
         total_paid = all_payments['Amount Paid'].sum()
 
-        # Current term fees (latest month)
         current_month = date.today().strftime('%B %Y')
         current_term_paid = all_payments[all_payments['Month Covered'] == current_month]['Amount Paid'].sum()
 
-        # Previous terms balance (all months except current)
         prev_payments = all_payments[all_payments['Month Covered'] != current_month]
 
-        # Monthly fee from Fee Structure, if that sheet exists
-        fee_structure_df = load_data("Fee Structure", optional=True)
-        if len(fee_structure_df) > 0:
+        # Fee structure lookup
+        try:
+            fee_structure_df = load_data("Fee Structure")
             monthly_fee = fee_structure_df[fee_structure_df['Class'] == student_class]['Monthly Fee'].sum()
-        else:
-            monthly_fee = 50  # default
+        except:
+            monthly_fee = 50
 
-        # Calculate previous terms balance
-        months_enrolled = len(all_payments['Month Covered'].unique()) if len(all_payments) > 0 else 1
+        months_with_payments = set(all_payments['Month Covered'].unique()) if len(all_payments) > 0 else set()
+        months_enrolled = max(len(months_with_payments), 1)
+
         prev_terms_fees = (months_enrolled - 1) * monthly_fee if months_enrolled > 1 else 0
         prev_terms_paid = prev_payments['Amount Paid'].sum() if len(prev_payments) > 0 else 0
         prev_balance = max(0, prev_terms_fees - prev_terms_paid)
 
-        # Overall balance
         total_fees_due = months_enrolled * monthly_fee
         overall_balance = max(0, total_fees_due - total_paid)
 
         current_term_fee = monthly_fee
-        current_balance = max(0, current_term_fee - current_term_paid)
-
     else:
         student_class = st.session_state.student_class
         total_paid = 0
@@ -446,8 +463,9 @@ def student_dashboard():
         prev_balance = 0
         overall_balance = 0
         current_term_fee = 0
-        current_balance = 0
         monthly_fee = 0
+
+    my_performance = performance_df[performance_df['Student Name'] == st.session_state.student_name] if len(performance_df) > 0 else pd.DataFrame()
 
     # Header
     col1, col2, col3 = st.columns([1, 3, 1])
@@ -464,36 +482,31 @@ def student_dashboard():
         """, unsafe_allow_html=True)
     st.divider()
 
-    # ============================================
-    # PAGE: MY DASHBOARD
-    # ============================================
+    # Page routing based on sidebar selection
     if st.session_state.current_page == "My Dashboard":
-        # Personal Details Section
-        st.markdown('<div class="section-card"><h4>Personal Details</h4>', unsafe_allow_html=True)
+        st.markdown('<div class="section-card"><h3>Personal Details</h3>', unsafe_allow_html=True)
         col1, col2 = st.columns(2)
         with col1:
-            detail_row("Full Name", st.session_state.student_name)
-            detail_row("Date of Birth", field("Date of Birth"))
-            detail_row("Gender", field("Gender"))
+            st.markdown(f'<div class="detail-row"><span class="detail-label">Full Name</span><span class="detail-value">{st.session_state.student_name}</span></div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="detail-row"><span class="detail-label">Date of Birth</span><span class="detail-value">{student_row.get("Date of Birth", "N/A") if len(student_info) > 0 else "N/A"}</span></div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="detail-row"><span class="detail-label">Gender</span><span class="detail-value">{student_row.get("Gender", "N/A") if len(student_info) > 0 else "N/A"}</span></div>', unsafe_allow_html=True)
         with col2:
-            detail_row("Address", field("Address"))
-            detail_row("Guardian Name", field("Guardian Name"))
-            detail_row("Guardian Phone", field("Guardian Phone"))
-        st.markdown("</div>", unsafe_allow_html=True)
+            st.markdown(f'<div class="detail-row"><span class="detail-label">Address</span><span class="detail-value">{student_row.get("Address", "N/A") if len(student_info) > 0 else "N/A"}</span></div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="detail-row"><span class="detail-label">Guardian Name</span><span class="detail-value">{student_row.get("Guardian Name", "N/A") if len(student_info) > 0 else "N/A"}</span></div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="detail-row"><span class="detail-label">Guardian Phone</span><span class="detail-value">{student_row.get("Guardian Phone", "N/A") if len(student_info) > 0 else "N/A"}</span></div>', unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
 
-        # Academic Details Section
-        st.markdown('<div class="section-card"><h4>Academic Details</h4>', unsafe_allow_html=True)
+        st.markdown('<div class="section-card"><h3>Academic Details</h3>', unsafe_allow_html=True)
         col1, col2 = st.columns(2)
         with col1:
-            detail_row("Student Number", field("Student Number"))
-            detail_row("Class", student_class)
+            st.markdown(f'<div class="detail-row"><span class="detail-label">Student Number</span><span class="detail-value">{student_row.get("Student Number", "N/A") if len(student_info) > 0 else "N/A"}</span></div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="detail-row"><span class="detail-label">Class</span><span class="detail-value">{student_class}</span></div>', unsafe_allow_html=True)
         with col2:
-            detail_row("Registration Status", "Active")
-            detail_row("Academic Year", "2026")
-        st.markdown("</div>", unsafe_allow_html=True)
+            st.markdown(f'<div class="detail-row"><span class="detail-label">Registration Status</span><span class="detail-value">Active</span></div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="detail-row"><span class="detail-label">Academic Year</span><span class="detail-value">2026</span></div>', unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
 
-        # Financial Details Section
-        st.markdown('<div class="section-card"><h4>Financial Details</h4>', unsafe_allow_html=True)
+        st.markdown('<div class="section-card"><h3>Financial Details</h3>', unsafe_allow_html=True)
         col1, col2 = st.columns(2)
         with col1:
             st.metric("Current Term Fees", f"${current_term_fee:,.0f}")
@@ -502,14 +515,10 @@ def student_dashboard():
             st.metric("Previous Terms Balance", f"${prev_balance:,.0f}")
             st.metric("Overall Fees Balance", f"${overall_balance:,.0f}",
                      delta="Paid Full" if overall_balance <= 0 else "Outstanding")
-        st.markdown("</div>", unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
 
-    # ============================================
-    # PAGE: FEE SUMMARY
-    # ============================================
     elif st.session_state.current_page == "Fee Summary":
         st.subheader("Fee Summary")
-
         col1, col2, col3 = st.columns(3)
         with col1:
             st.metric("Fees Payable", f"${current_term_fee:,.0f}")
@@ -519,21 +528,14 @@ def student_dashboard():
             st.metric("Balance Owing", f"${overall_balance:,.0f}",
                      delta="Paid Full" if overall_balance <= 0 else "Outstanding")
 
-    # ============================================
-    # PAGE: PAYMENT HISTORY
-    # ============================================
     elif st.session_state.current_page == "Payment History":
         st.subheader("Payment History")
-
         my_payments = fee_payments_df[fee_payments_df['Student Name'] == st.session_state.student_name]
-
         if len(my_payments) > 0:
             payment_display = my_payments[['Date', 'Month Covered', 'Amount Paid', 'Payment Method']].copy()
             payment_display.columns = ['Date', 'Description', 'Amount', 'Method']
             payment_display = payment_display.sort_values('Date', ascending=False)
             st.dataframe(payment_display, use_container_width=True, hide_index=True)
-
-            st.divider()
             col1, col2, col3 = st.columns(3)
             with col1:
                 st.metric("Total Payments", len(payment_display))
@@ -553,45 +555,32 @@ def student_dashboard():
     </div>
     """, unsafe_allow_html=True)
 
-    # ============================================
-    # SIDEBAR
-    # ============================================
+    # Sidebar
     with st.sidebar:
         st.markdown("## Focus Oasis")
         st.markdown("---")
-
         display_student_photo(profile.get("Profile Photo", ""), size=80, name=st.session_state.student_name)
-        st.markdown(f"<p style='text-align:center;color:white;font-weight:700;'>{display_name}</p>",
-                   unsafe_allow_html=True)
-        st.markdown(f"<p style='text-align:center;color:#2E86C1;font-size:12px;'>{student_class}</p>",
-                   unsafe_allow_html=True)
+        st.markdown(f"<p style='text-align:center;color:white;font-weight:700;'>{display_name}</p>", unsafe_allow_html=True)
+        st.markdown(f"<p style='text-align:center;color:#2E86C1;font-size:12px;'>{student_class}</p>", unsafe_allow_html=True)
         st.markdown("---")
 
-        if st.button("My Dashboard", use_container_width=True,
-                    type="primary" if st.session_state.current_page == "My Dashboard" else "secondary"):
+        if st.button("My Dashboard", use_container_width=True):
             st.session_state.current_page = "My Dashboard"
             st.rerun()
-
-        if st.button("Fee Summary", use_container_width=True,
-                    type="primary" if st.session_state.current_page == "Fee Summary" else "secondary"):
+        if st.button("Fee Summary", use_container_width=True):
             st.session_state.current_page = "Fee Summary"
             st.rerun()
-
-        if st.button("Payment History", use_container_width=True,
-                    type="primary" if st.session_state.current_page == "Payment History" else "secondary"):
+        if st.button("Payment History", use_container_width=True):
             st.session_state.current_page = "Payment History"
             st.rerun()
-
         st.markdown("---")
-
         if st.button("Profile Settings", use_container_width=True):
             profile_settings_dialog(st.session_state.username, profile)
-
         st.markdown("---")
-
         if st.button("Logout", use_container_width=True):
-            for key, default in DEFAULT_SESSION_STATE.items():
-                st.session_state[key] = default
+            for key in ['logged_in', 'user_type', 'student_name', 'username', 'student_class', 'current_page']:
+                st.session_state[key] = None
+            st.session_state.logged_in = False
             st.rerun()
 
 # ============================================
@@ -602,48 +591,37 @@ def admin_dashboard():
 
     students_df = load_data("Students")
     fee_payments_df = load_data("Fee Payments")
-    expenses_df = load_data("Expenses", optional=True)
-    other_income_df = load_data("Other Income", optional=True)
+    expenses_df = load_data("Expenses")
+    other_income_df = load_data("Other Income")
 
     tab1, tab2, tab3 = st.tabs(["Overview", "Finances", "All Students"])
 
     with tab1:
         st.subheader("School Overview")
         classes = students_df['Class'].value_counts()
-
         col1, col2, col3, col4 = st.columns(4)
-        with col1:
-            st.metric("Total Students", len(students_df))
-        with col2:
-            st.metric("Classes", len(classes))
-        with col3:
-            st.metric("Fees Collected", f"${fee_payments_df['Amount Paid'].sum():,.0f}")
-        with col4:
-            st.metric("Expenses", f"${expenses_df['Amount'].sum() if len(expenses_df) > 0 else 0:,.0f}")
-
+        with col1: st.metric("Total Students", len(students_df))
+        with col2: st.metric("Classes", len(classes))
+        with col3: st.metric("Fees Collected", f"${fee_payments_df['Amount Paid'].sum():,.0f}")
+        with col4: st.metric("Expenses", f"${expenses_df['Amount'].sum() if len(expenses_df)>0 else 0:,.0f}")
         st.subheader("Students by Class")
         st.bar_chart(classes)
 
     with tab2:
         st.subheader("Financial Summary")
         fees = fee_payments_df['Amount Paid'].sum()
-        expenses = expenses_df['Amount'].sum() if len(expenses_df) > 0 else 0
-        other = other_income_df['Amount'].sum() if len(other_income_df) > 0 else 0
-
+        expenses = expenses_df['Amount'].sum() if len(expenses_df)>0 else 0
+        other = other_income_df['Amount'].sum() if len(other_income_df)>0 else 0
         col1, col2, col3 = st.columns(3)
-        with col1:
-            st.metric("Fees", f"${fees:,.0f}")
-        with col2:
-            st.metric("Other Income", f"${other:,.0f}")
-        with col3:
-            st.metric("Expenses", f"${expenses:,.0f}")
+        with col1: st.metric("Fees", f"${fees:,.0f}")
+        with col2: st.metric("Other Income", f"${other:,.0f}")
+        with col3: st.metric("Expenses", f"${expenses:,.0f}")
         st.metric("Net Position", f"${fees + other - expenses:,.0f}")
 
     with tab3:
         st.subheader("All Students")
         st.dataframe(students_df, use_container_width=True, hide_index=True)
 
-    # Footer
     st.markdown("---")
     st.markdown("""
     <div style="text-align:center;color:#1B2A4A;padding:20px 0;">
@@ -656,8 +634,8 @@ def admin_dashboard():
         st.markdown("## Focus Oasis")
         st.markdown("---")
         if st.button("Logout", use_container_width=True):
-            for key, default in DEFAULT_SESSION_STATE.items():
-                st.session_state[key] = default
+            st.session_state.logged_in = False
+            st.session_state.user_type = None
             st.rerun()
 
 # ============================================
