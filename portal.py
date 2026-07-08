@@ -16,8 +16,10 @@ st.set_page_config(
     layout="wide"
 )
 
-# School logo, hosted on GitHub (raw file URL)
-SCHOOL_LOGO_URL = "https://github.com/MisheckMusiteyi/Focus-Oasis-/blob/main/IMG-20260526-WA0009%20(1).jpg?raw=true"
+# School logo, hosted on GitHub (direct raw-content URL — more reliable
+# for hotlinking as an <img> src than the blob "?raw=true" link, which
+# goes through a redirect that can fail inside Streamlit's iframe)
+SCHOOL_LOGO_URL = "https://raw.githubusercontent.com/MisheckMusiteyi/Focus-Oasis-/main/IMG-20260526-WA0009%20(1).jpg"
 
 # ============================================
 # CUSTOM CSS - Focus Oasis Branding
@@ -137,6 +139,23 @@ st.markdown("""
         padding: 40px 30px;
         margin: 0 auto;
         max-width: 450px;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Faint watermark logo sitting behind the login page content */
+    .login-watermark {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 55vw;
+        max-width: 550px;
+        height: auto;
+        object-fit: contain;
+        opacity: 0.06;
+        z-index: 0;
+        pointer-events: none;
     }
 
     /* Bigger, bolder institution title on the login page */
@@ -385,12 +404,15 @@ if 'current_page' not in st.session_state:
 # LOGIN PAGE
 # ============================================
 def login_page():
+    # Faint watermark logo, sent behind all other login page content
+    st.markdown(f'<img src="{SCHOOL_LOGO_URL}" class="login-watermark">', unsafe_allow_html=True)
+
     # Top decorative shape
-    st.markdown('<div class="top-shape"></div>', unsafe_allow_html=True)
+    st.markdown('<div class="top-shape" style="position:relative;z-index:1;"></div>', unsafe_allow_html=True)
 
     # Institution name
-    st.markdown('<div class="school-title">Focus Oasis Foundation</div>', unsafe_allow_html=True)
-    st.markdown('<div class="school-subtitle">Student & Admin Portal</div>', unsafe_allow_html=True)
+    st.markdown('<div class="school-title" style="position:relative;z-index:1;">Focus Oasis Foundation</div>', unsafe_allow_html=True)
+    st.markdown('<div class="school-subtitle" style="position:relative;z-index:1;">Student & Admin Portal</div>', unsafe_allow_html=True)
 
     # Login card
     col1, col2, col3 = st.columns([1, 2, 1])
@@ -516,7 +538,7 @@ def student_dashboard():
         st.markdown(f"""
         <div style="text-align:center;margin-top:10px;">
             <img src="{SCHOOL_LOGO_URL}"
-                 style="width:200px;height:400px;object-fit:contain;
+                 style="width:100px;height:100px;object-fit:contain;
                         display:block;margin:0 auto;">
         </div>
         """, unsafe_allow_html=True)
