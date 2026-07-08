@@ -169,14 +169,14 @@ st.markdown("""
     }
     .card-body {
         background-color: white;
-        border: 1px solid #888888;
+        border: 1px solid #1B2A4A;
         border-top: none;
     }
     .detail-row {
         display: flex;
         justify-content: space-between;
         padding: 12px 18px;
-        border-bottom: 1px solid #888888;
+        border-bottom: 1px solid #1B2A4A;
     }
     .detail-row:nth-child(even) {
         background-color: #F7F8FA;
