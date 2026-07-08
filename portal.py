@@ -16,6 +16,9 @@ st.set_page_config(
     layout="wide"
 )
 
+# School logo, hosted on GitHub (raw file URL)
+SCHOOL_LOGO_URL = "https://github.com/MisheckMusiteyi/Focus-Oasis-/blob/main/IMG-20260526-WA0009%20(1).jpg?raw=true"
+
 # ============================================
 # CUSTOM CSS - Focus Oasis Branding
 # ============================================
@@ -299,15 +302,18 @@ def get_initials(full_name):
 def display_student_photo(photo_b64=None, size=120, name=""):
     if photo_b64:
         st.markdown(f"""
-            <img src="data:image/jpeg;base64,{photo_b64}"
-            style="width:{size}px;height:{size}px;border-radius:50%;
-                   object-fit:cover;
-                   display:block;margin:0 auto;">
+            <div style="width:{size}px;height:{size}px;border-radius:10px;
+                        overflow:hidden;margin:0 auto;
+                        border:1px solid #D5DCE3;">
+                <img src="data:image/jpeg;base64,{photo_b64}"
+                style="width:100%;height:100%;object-fit:cover;
+                       object-position:center;display:block;">
+            </div>
         """, unsafe_allow_html=True)
     else:
         initials = get_initials(name)
         st.markdown(f"""
-            <div style="width:{size}px;height:{size}px;border-radius:50%;
+            <div style="width:{size}px;height:{size}px;border-radius:10px;
                         background:#1B2A4A;color:white;display:flex;
                         align-items:center;justify-content:center;
                         font-size:{int(size*0.4)}px;font-weight:bold;
@@ -509,8 +515,9 @@ def student_dashboard():
     with col3:
         st.markdown(f"""
         <div style="text-align:center;margin-top:10px;">
-            <p style="color:#1B2A4A;font-weight:700;font-size:14px;">{display_name}</p>
-            <p style="color:#2E86C1;font-size:12px;">{student_class}</p>
+            <img src="{SCHOOL_LOGO_URL}"
+                 style="width:100px;height:100px;object-fit:contain;
+                        display:block;margin:0 auto;">
         </div>
         """, unsafe_allow_html=True)
     st.divider()
