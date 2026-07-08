@@ -531,9 +531,9 @@ def student_dashboard():
     my_performance = performance_df[performance_df['Student Name'] == st.session_state.student_name] if len(performance_df) > 0 else pd.DataFrame()
 
     # Header
-    col1, col2, col3 = st.columns([1, 3, 1])
+    col1, col2, col3 = st.columns([1.4, 2.6, 1])
     with col1:
-        display_student_photo(profile.get("Profile Photo", ""), size=160, name=st.session_state.student_name)
+        display_student_photo(profile.get("Profile Photo", ""), size=230, name=st.session_state.student_name)
     with col2:
         st.title(f"Welcome, {display_name}")
     with col3:
@@ -618,8 +618,14 @@ def student_dashboard():
     with st.sidebar:
         st.markdown("## Focus Oasis")
         st.markdown("---")
-        # Bigger profile photo in the sidebar
-        display_student_photo(profile.get("Profile Photo", ""), size=170, name=st.session_state.student_name)
+        # School logo in the sidebar (replaces the student profile photo)
+        st.markdown(f"""
+            <div style="text-align:center;">
+                <img src="{SCHOOL_LOGO_URL}"
+                     style="width:150px;height:150px;object-fit:contain;
+                            display:block;margin:0 auto;">
+            </div>
+        """, unsafe_allow_html=True)
         st.markdown(f"<p style='text-align:center;color:white;font-weight:700;'>{display_name}</p>", unsafe_allow_html=True)
         st.markdown(f"<p style='text-align:center;color:#2E86C1;font-size:12px;'>{student_class}</p>", unsafe_allow_html=True)
         st.markdown("---")
