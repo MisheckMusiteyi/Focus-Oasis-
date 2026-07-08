@@ -367,7 +367,7 @@ def save_student_profile(username, display_name, photo_b64=""):
     if not display_name:
         display_name = username
     if len(photo_b64) > 45000:
-        st.warning("Image too large. Please use a smaller image.")
+        st.warning("Image too large. Please use an image with a smaller size.")
         photo_b64 = ""
 
     row_data = [username, display_name, photo_b64]
