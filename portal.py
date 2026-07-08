@@ -151,22 +151,40 @@ st.markdown("""
         margin-bottom: 20px;
     }
 
-    .section-card {
-        background: white;
-        border: 1px solid #E0E0E0;
-        border-radius: 10px;
-        padding: 20px;
-        margin-bottom: 20px;
+    /* ── Dashboard Card Boxes ── */
+    .card-box {
+        border: 1px solid #D5DCE3;
+        border-radius: 4px;
+        margin-bottom: 25px;
+        overflow: hidden;
+    }
+    .card-header {
+        background-color: #1B2A4A;
+        color: white !important;
+        padding: 12px 18px;
+        font-size: 15px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+    }
+    .card-body {
+        background-color: white;
     }
     .detail-row {
         display: flex;
         justify-content: space-between;
-        padding: 8px 0;
-        border-bottom: 1px solid #F0F0F0;
+        padding: 12px 18px;
+        border-bottom: 1px solid #EDEDED;
+    }
+    .detail-row:nth-child(even) {
+        background-color: #F7F8FA;
+    }
+    .detail-row:last-child {
+        border-bottom: none;
     }
     .detail-label {
-        color: #2E86C1;
-        font-weight: 600;
+        color: #444;
+        font-weight: 500;
     }
     .detail-value {
         color: #1B2A4A;
@@ -457,7 +475,7 @@ def student_dashboard():
     # Header
     col1, col2, col3 = st.columns([1, 3, 1])
     with col1:
-        display_student_photo(profile.get("Profile Photo", ""), size=100, name=st.session_state.student_name)
+        display_student_photo(profile.get("Profile Photo", ""), size=160, name=st.session_state.student_name)
     with col2:
         st.title(f"Welcome, {display_name}")
     with col3:
@@ -471,38 +489,33 @@ def student_dashboard():
 
     # Page routing based on sidebar selection
     if st.session_state.current_page == "My Dashboard":
-        st.markdown('<div class="section-card"><h3>Personal Details</h3>', unsafe_allow_html=True)
-        col1, col2 = st.columns(2)
-        with col1:
-            st.markdown(f'<div class="detail-row"><span class="detail-label">Full Name</span><span class="detail-value">{st.session_state.student_name}</span></div>', unsafe_allow_html=True)
-            st.markdown(f'<div class="detail-row"><span class="detail-label">Date of Birth</span><span class="detail-value">{student_row.get("Date of Birth", "N/A") if len(student_info) > 0 else "N/A"}</span></div>', unsafe_allow_html=True)
-            st.markdown(f'<div class="detail-row"><span class="detail-label">Gender</span><span class="detail-value">{student_row.get("Gender", "N/A") if len(student_info) > 0 else "N/A"}</span></div>', unsafe_allow_html=True)
-        with col2:
-            st.markdown(f'<div class="detail-row"><span class="detail-label">Address</span><span class="detail-value">{student_row.get("Address", "N/A") if len(student_info) > 0 else "N/A"}</span></div>', unsafe_allow_html=True)
-            st.markdown(f'<div class="detail-row"><span class="detail-label">Guardian Name</span><span class="detail-value">{student_row.get("Guardian Name", "N/A") if len(student_info) > 0 else "N/A"}</span></div>', unsafe_allow_html=True)
-            st.markdown(f'<div class="detail-row"><span class="detail-label">Guardian Phone</span><span class="detail-value">{student_row.get("Guardian Phone", "N/A") if len(student_info) > 0 else "N/A"}</span></div>', unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
 
-        st.markdown('<div class="section-card"><h3>Academic Details</h3>', unsafe_allow_html=True)
-        col1, col2 = st.columns(2)
-        with col1:
-            st.markdown(f'<div class="detail-row"><span class="detail-label">Student Number</span><span class="detail-value">{student_row.get("Student Number", "N/A") if len(student_info) > 0 else "N/A"}</span></div>', unsafe_allow_html=True)
-            st.markdown(f'<div class="detail-row"><span class="detail-label">Class</span><span class="detail-value">{student_class}</span></div>', unsafe_allow_html=True)
-        with col2:
-            st.markdown(f'<div class="detail-row"><span class="detail-label">Registration Status</span><span class="detail-value">Active</span></div>', unsafe_allow_html=True)
-            st.markdown(f'<div class="detail-row"><span class="detail-label">Academic Year</span><span class="detail-value">2026</span></div>', unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
+        # Personal Details
+        st.markdown('<div class="card-box"><div class="card-header">👤 PERSONAL DETAILS</div><div class="card-body">', unsafe_allow_html=True)
+        st.markdown(f'<div class="detail-row"><span class="detail-label">Full Name</span><span class="detail-value">{st.session_state.student_name}</span></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="detail-row"><span class="detail-label">Date of Birth</span><span class="detail-value">{student_row.get("Date of Birth", "N/A") if len(student_info) > 0 else "N/A"}</span></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="detail-row"><span class="detail-label">Gender</span><span class="detail-value">{student_row.get("Gender", "N/A") if len(student_info) > 0 else "N/A"}</span></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="detail-row"><span class="detail-label">Address</span><span class="detail-value">{student_row.get("Address", "N/A") if len(student_info) > 0 else "N/A"}</span></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="detail-row"><span class="detail-label">Guardian Name</span><span class="detail-value">{student_row.get("Guardian Name", "N/A") if len(student_info) > 0 else "N/A"}</span></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="detail-row"><span class="detail-label">Guardian Phone</span><span class="detail-value">{student_row.get("Guardian Phone", "N/A") if len(student_info) > 0 else "N/A"}</span></div>', unsafe_allow_html=True)
+        st.markdown('</div></div>', unsafe_allow_html=True)
 
-        st.markdown('<div class="section-card"><h3>Financial Details</h3>', unsafe_allow_html=True)
-        col1, col2 = st.columns(2)
-        with col1:
-            st.metric("Current Term Fees", f"${current_term_fee:,.0f}")
-            st.metric("Current Fees Paid", f"${current_term_paid:,.0f}")
-        with col2:
-            st.metric("Previous Terms Balance", f"${prev_balance:,.0f}")
-            st.metric("Overall Fees Balance", f"${overall_balance:,.0f}",
-                     delta="Paid Full" if overall_balance <= 0 else "Outstanding")
-        st.markdown('</div>', unsafe_allow_html=True)
+        # Academic Details
+        st.markdown('<div class="card-box"><div class="card-header">🎓 ACADEMIC DETAILS</div><div class="card-body">', unsafe_allow_html=True)
+        st.markdown(f'<div class="detail-row"><span class="detail-label">Student Number</span><span class="detail-value">{student_row.get("Student Number", "N/A") if len(student_info) > 0 else "N/A"}</span></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="detail-row"><span class="detail-label">Class</span><span class="detail-value">{student_class}</span></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="detail-row"><span class="detail-label">Registration Status</span><span class="detail-value">Active</span></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="detail-row"><span class="detail-label">Academic Year</span><span class="detail-value">2026</span></div>', unsafe_allow_html=True)
+        st.markdown('</div></div>', unsafe_allow_html=True)
+
+        # Financial Details
+        st.markdown('<div class="card-box"><div class="card-header">💰 FINANCIAL DETAILS</div><div class="card-body">', unsafe_allow_html=True)
+        st.markdown(f'<div class="detail-row"><span class="detail-label">Current Term Fees</span><span class="detail-value">${current_term_fee:,.0f}</span></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="detail-row"><span class="detail-label">Current Fees Paid</span><span class="detail-value">${current_term_paid:,.0f}</span></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="detail-row"><span class="detail-label">Previous Terms Balance</span><span class="detail-value">${prev_balance:,.0f}</span></div>', unsafe_allow_html=True)
+        balance_color = "#4CAF50" if overall_balance <= 0 else "#f44336"
+        st.markdown(f'<div class="detail-row"><span class="detail-label">Overall Fees Balance</span><span class="detail-value" style="color:{balance_color};">${overall_balance:,.0f}</span></div>', unsafe_allow_html=True)
+        st.markdown('</div></div>', unsafe_allow_html=True)
 
     elif st.session_state.current_page == "Fee Summary":
         st.subheader("Fee Summary")
@@ -546,7 +559,7 @@ def student_dashboard():
     with st.sidebar:
         st.markdown("## Focus Oasis")
         st.markdown("---")
-        display_student_photo(profile.get("Profile Photo", ""), size=80, name=st.session_state.student_name)
+        display_student_photo(profile.get("Profile Photo", ""), size=110, name=st.session_state.student_name)
         st.markdown(f"<p style='text-align:center;color:white;font-weight:700;'>{display_name}</p>", unsafe_allow_html=True)
         st.markdown(f"<p style='text-align:center;color:#2E86C1;font-size:12px;'>{student_class}</p>", unsafe_allow_html=True)
         st.markdown("---")
