@@ -60,10 +60,16 @@ st.markdown("""
 
     [data-testid="stSidebar"] {
         background-color: #1B2A4A !important;
+        min-width: 300px !important;
+        max-width: 300px !important;
+        width: 300px !important;
     }
     [data-testid="stSidebar"] h1,
     [data-testid="stSidebar"] h2,
-    [data-testid="stSidebar"] h3,
+    [data-testid="stSidebar"] h3 {
+        color: white !important;
+        text-align: center !important;
+    }
     [data-testid="stSidebar"] p,
     [data-testid="stSidebar"] label {
         color: white !important;
@@ -75,6 +81,18 @@ st.markdown("""
     [data-testid="stSidebar"] .stButton > button:hover {
         background-color: #1B2A4A !important;
         border: 1px solid #2E86C1 !important;
+    }
+
+    /* Lock the sidebar: hide the collapse arrow and the drag-to-resize handle */
+    [data-testid="collapsedControl"] {
+        display: none !important;
+    }
+    [data-testid="stSidebarCollapseButton"] {
+        display: none !important;
+    }
+    [data-testid="stSidebarResizeHandle"] {
+        display: none !important;
+        pointer-events: none !important;
     }
 
     hr {
