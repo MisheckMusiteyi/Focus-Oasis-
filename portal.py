@@ -28,32 +28,18 @@ st.markdown("""
 <style>
     * { font-family: 'Georgia', 'Times New Roman', serif !important; }
 
-    /* Streamlit's password show/hide toggle has been rendering as
-       literal text (e.g. "visibility") instead of an eye icon, because
-       the global serif override above breaks whatever icon font/ligature
-       it normally relies on. Rather than guess Streamlit's exact
-       internal class names (which vary by version), we take the same
-       defensive approach used for the file uploader: hide any raw
-       text/icon Streamlit renders inside the toggle, and draw our own
-       simple eye glyph on top instead. This works regardless of
-       Streamlit's internal markup. */
-    [data-testid*="RevealButton"] {
-        position: relative !important;
-        font-size: 0 !important;
-        color: transparent !important;
-    }
-    [data-testid*="RevealButton"] * {
-        font-size: 0 !important;
-        color: transparent !important;
-    }
-    [data-testid*="RevealButton"]::before {
-        content: "\\1F441";
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        font-size: 16px !important;
-        color: #1B2A4A !important;
+    /* Streamlit renders its built-in icons (like the password show/hide
+       toggle) using Google's "Material Symbols" icon font, applied via
+       an inline style="font-family: 'Material Symbols Rounded'" on the
+       icon element itself (confirmed via Streamlit's own source/issue
+       tracker). Our global serif !important rule above was overriding
+       that inline style, which broke the icon's font ligature and left
+       the raw icon name (e.g. "visibility") showing as literal text.
+       Restore the icon font specifically wherever Streamlit sets that
+       inline style, regardless of which testid/class wraps it. */
+    [style*="Material Symbols"] {
+        font-family: 'Material Symbols Rounded', 'Material Symbols Outlined',
+                     'Material Symbols Sharp', sans-serif !important;
     }
 
     .stApp {
