@@ -28,6 +28,22 @@ st.markdown("""
 <style>
     * { font-family: 'Georgia', 'Times New Roman', serif !important; }
 
+    /* Streamlit renders several of its own controls — like the
+       show/hide toggle on password fields — using an icon font, where
+       a word such as "visibility" is a ligature name that should
+       display as an eye glyph, not literal text. The global serif
+       override above breaks that ligature and shows the raw word.
+       Restore the icon font specifically for those elements. */
+    [class*="material-icons"],
+    [class*="material-symbols"],
+    [data-testid="stTextInputRevealButton"] span,
+    [data-testid="stTextInputRevealButton"] i,
+    [data-testid="baseButton-headerNoPadding"] span[class*="icon"],
+    span[class*="eyeIcon"] {
+        font-family: 'Material Symbols Rounded', 'Material Symbols Outlined',
+                     'Material Icons Round', 'Material Icons', sans-serif !important;
+    }
+
     .stApp {
         background-color: #FFFFFF !important;
     }
