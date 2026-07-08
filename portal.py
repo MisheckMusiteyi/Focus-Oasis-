@@ -169,12 +169,14 @@ st.markdown("""
     }
     .card-body {
         background-color: white;
+        border: 1px solid #888888;
+        border-top: none;
     }
     .detail-row {
         display: flex;
         justify-content: space-between;
         padding: 12px 18px;
-        border-bottom: 1px solid #EDEDED;
+        border-bottom: 1px solid #888888;
     }
     .detail-row:nth-child(even) {
         background-color: #F7F8FA;
@@ -293,7 +295,7 @@ def display_student_photo(photo_b64=None, size=120, name=""):
         st.markdown(f"""
             <img src="data:image/jpeg;base64,{photo_b64}"
             style="width:{size}px;height:{size}px;border-radius:50%;
-                   object-fit:cover;border:4px solid #2E86C1;
+                   object-fit:cover;
                    display:block;margin:0 auto;">
         """, unsafe_allow_html=True)
     else:
@@ -303,7 +305,7 @@ def display_student_photo(photo_b64=None, size=120, name=""):
                         background:#1B2A4A;color:white;display:flex;
                         align-items:center;justify-content:center;
                         font-size:{int(size*0.4)}px;font-weight:bold;
-                        margin:0 auto;border:4px solid #2E86C1;">
+                        margin:0 auto;">
             {initials}
             </div>
         """, unsafe_allow_html=True)
