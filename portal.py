@@ -228,6 +228,24 @@ st.markdown("""
         background-color: #1B2A4A !important;
         color: white !important;
     }
+    /* Same root cause as the button fix above: the generic p/span
+       color-lock rule also paints tab label text navy, which made it
+       invisible against the selected tab's navy background. Force it
+       white specifically inside the selected tab. */
+    .stTabs [aria-selected="true"] p,
+    .stTabs [aria-selected="true"] span,
+    .stTabs [aria-selected="true"] div {
+        color: white !important;
+    }
+    /* The sliding underline indicator below the tabs is a separate
+       BaseWeb element that wasn't covered by our brand colors, so it
+       was falling back to Streamlit's default red. */
+    [data-baseweb="tab-highlight"] {
+        background-color: #2E86C1 !important;
+    }
+    [data-baseweb="tab-border"] {
+        background-color: #D5DCE3 !important;
+    }
 
     [data-testid="stExpander"] summary {
         border-left: 3px solid #2E86C1 !important;
