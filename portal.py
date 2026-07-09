@@ -592,20 +592,60 @@ if 'current_page' not in st.session_state:
 # LOGIN PAGE
 # ============================================
 def login_page():
-    # Scoped to the login page only: locks the viewport so the login
-    # screen can never be scrolled. This style block is only emitted
-    # while login_page() runs, so it never applies to the dashboards
-    # (which need to scroll normally).
+    # Scoped to the login page only: tightens vertical spacing so the
+    # whole login screen fits in one viewport on most screens, and — if
+    # it still doesn't fit on a smaller screen — falls back to letting
+    # the page scroll rather than clipping content. The scrollbar itself
+    # is hidden for a cleaner look, but scrolling (wheel/touch/keys)
+    # still works, so nothing is ever inaccessible.
     st.markdown("""
         <style>
             html, body,
             [data-testid="stAppViewContainer"],
-            [data-testid="stMain"],
-            [data-testid="stMainBlockContainer"],
-            .main {
-                overflow: hidden !important;
+            [data-testid="stMain"] {
                 height: 100vh !important;
                 max-height: 100vh !important;
+                overflow-y: auto !important;
+                overflow-x: hidden !important;
+                scrollbar-width: none !important;      /* Firefox */
+                -ms-overflow-style: none !important;    /* old Edge/IE */
+            }
+            html::-webkit-scrollbar, body::-webkit-scrollbar,
+            [data-testid="stAppViewContainer"]::-webkit-scrollbar,
+            [data-testid="stMain"]::-webkit-scrollbar {
+                display: none !important;               /* Chrome/Safari */
+            }
+
+            /* Reclaim the large default top padding Streamlit reserves
+               for the header, and tighten the gaps between stacked
+               widgets, so more of the login form fits above the fold. */
+            [data-testid="stMainBlockContainer"] {
+                padding-top: 1rem !important;
+                padding-bottom: 1rem !important;
+            }
+            [data-testid="stVerticalBlock"] {
+                gap: 0.5rem !important;
+            }
+
+            .top-shape {
+                padding: 20px 20px 24px 20px !important;
+                margin-bottom: 14px !important;
+            }
+            .top-shape img.school-logo {
+                width: 52px !important;
+                height: 52px !important;
+                margin-bottom: 8px !important;
+            }
+            .top-shape .school-title-white {
+                font-size: 26px !important;
+            }
+            .top-shape .school-subtitle-white {
+                font-size: 14px !important;
+                margin-top: 4px !important;
+            }
+            .bottom-shape {
+                height: 56px !important;
+                margin-top: 14px !important;
             }
         </style>
     """, unsafe_allow_html=True)
