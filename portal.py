@@ -727,6 +727,16 @@ def login_page():
 # STUDENT DASHBOARD
 # ============================================
 def student_dashboard():
+    # Same navy top banner used on the login page, for a consistent look
+    # across the portal.
+    st.markdown(f"""
+        <div class="top-shape">
+            <img src="{SCHOOL_LOGO_URL}" class="school-logo">
+            <div class="school-title-white">Focus Oasis Foundation</div>
+            <div class="school-subtitle-white">Student Portal</div>
+        </div>
+    """, unsafe_allow_html=True)
+
     profile = get_student_profile(st.session_state.username)
     display_name = profile.get("Display Name", "") or st.session_state.student_name
 
@@ -783,19 +793,11 @@ def student_dashboard():
     my_performance = performance_df[performance_df['Student Name'] == st.session_state.student_name] if len(performance_df) > 0 else pd.DataFrame()
 
     # Header
-    col1, col2, col3 = st.columns([1.4, 2.6, 1])
+    col1, col2 = st.columns([1.4, 3.6])
     with col1:
         display_student_photo(profile.get("Profile Photo", ""), size=230, name=st.session_state.student_name)
     with col2:
         st.title(f"Welcome, {display_name}")
-    with col3:
-        st.markdown(f"""
-        <div style="text-align:center;margin-top:10px;">
-            <img src="{SCHOOL_LOGO_URL}"
-                 style="width:100px;height:100px;object-fit:contain;
-                        display:block;margin:0 auto;">
-        </div>
-        """, unsafe_allow_html=True)
     st.divider()
 
     # Page routing based on sidebar selection
@@ -881,11 +883,10 @@ def student_dashboard():
             st.info("No performance records found.")
 
     # Footer
-    st.markdown("---")
     st.markdown("""
-    <div style="text-align:center;color:#1B2A4A;padding:20px 0;">
-        <p style="margin:0;font-size:14px;">© 2026 Focus Oasis Foundation</p>
-        <p style="margin:5px 0 0 0;font-size:12px;color:#2E86C1;">All Rights Reserved</p>
+    <div class="bottom-shape">
+        <p>© 2026 Focus Oasis Foundation</p>
+        <p style="font-size:12px;color:#2E86C1;">All Rights Reserved</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -931,7 +932,17 @@ def student_dashboard():
 # ADMIN DASHBOARD
 # ============================================
 def admin_dashboard():
-    st.title("Admin Dashboard - Focus Oasis Foundation")
+    # Same navy top banner used on the login page, for a consistent look
+    # across the portal.
+    st.markdown(f"""
+        <div class="top-shape">
+            <img src="{SCHOOL_LOGO_URL}" class="school-logo">
+            <div class="school-title-white">Focus Oasis Foundation</div>
+            <div class="school-subtitle-white">Admin Portal</div>
+        </div>
+    """, unsafe_allow_html=True)
+
+    st.title("Admin Dashboard")
 
     students_df = load_data("Students")
     fee_payments_df = load_data("Fee Payments")
@@ -966,11 +977,10 @@ def admin_dashboard():
         st.subheader("All Students")
         st.dataframe(students_df, use_container_width=True, hide_index=True)
 
-    st.markdown("---")
     st.markdown("""
-    <div style="text-align:center;color:#1B2A4A;padding:20px 0;">
-        <p style="margin:0;font-size:14px;">© 2026 Focus Oasis Foundation</p>
-        <p style="margin:5px 0 0 0;font-size:12px;color:#2E86C1;">All Rights Reserved</p>
+    <div class="bottom-shape">
+        <p>© 2026 Focus Oasis Foundation</p>
+        <p style="font-size:12px;color:#2E86C1;">All Rights Reserved</p>
     </div>
     """, unsafe_allow_html=True)
 
