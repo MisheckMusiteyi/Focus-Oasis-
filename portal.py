@@ -156,6 +156,15 @@ st.markdown("""
     .stButton > button:hover {
         background-color: #2E86C1 !important;
     }
+    /* The generic "p { color: #1B2A4A }" theme-lock rule above also
+       matches the <p> Streamlit renders inside button labels, which
+       was overriding the button's inherited white text. Force it back
+       explicitly for anything inside a button. */
+    .stButton > button p,
+    .stButton > button span,
+    .stButton > button div {
+        color: white !important;
+    }
 
     [data-testid="stMetricValue"] {
         color: #1B2A4A !important;
