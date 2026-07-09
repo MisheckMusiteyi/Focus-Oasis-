@@ -26,7 +26,73 @@ SCHOOL_LOGO_URL = "https://raw.githubusercontent.com/MisheckMusiteyi/Focus-Oasis
 # ============================================
 st.markdown("""
 <style>
+    /* ── THEME LOCK ──────────────────────────────────────────────
+       Streamlit's Light/Dark toggle (and "Use system setting") works
+       by swapping a set of CSS custom properties on the root element
+       (--background-color, --text-color, --secondary-background-color,
+       --primary-color, etc.). Many built-in widgets — the top header
+       bar, dataframes, selectboxes, alerts — read those variables
+       directly rather than using colors we can target with our own
+       component-level rules. Overriding the variables themselves,
+       regardless of which data-theme is active, is what actually
+       makes the app immune to the toggle. */
+    :root, html[data-theme="light"], html[data-theme="dark"],
+    body[data-theme="light"], body[data-theme="dark"],
+    .stApp[data-theme="light"], .stApp[data-theme="dark"] {
+        --background-color: #FFFFFF !important;
+        --secondary-background-color: #F4F6F9 !important;
+        --text-color: #1B2A4A !important;
+        --primary-color: #2E86C1 !important;
+    }
+
+    html, body {
+        background-color: #FFFFFF !important;
+        color: #1B2A4A !important;
+        /* Stops native browser form controls (date pickers, scrollbars,
+           the eye icon, etc.) from rendering in dark mode even if the
+           OS/browser prefers dark. */
+        color-scheme: light !important;
+    }
+
     * { font-family: 'Georgia', 'Times New Roman', serif !important; }
+
+    /* Top header bar / toolbar / decoration strip Streamlit renders
+       above the app — these follow the theme unless pinned. */
+    [data-testid="stHeader"],
+    [data-testid="stToolbar"] {
+        background-color: #FFFFFF !important;
+    }
+    [data-testid="stDecoration"] {
+        background-image: none !important;
+        background-color: #1B2A4A !important;
+    }
+
+    [data-testid="stAppViewContainer"],
+    [data-testid="stMain"],
+    .main {
+        background-color: #FFFFFF !important;
+    }
+
+    /* Generic text elements default to navy regardless of theme.
+       More specific rules further down (e.g. sidebar text, the navy
+       banner's white title) have higher CSS specificity and still win,
+       so this is safe to apply broadly. */
+    p, span, label, li,
+    .stMarkdown, [data-testid="stMarkdownContainer"] {
+        color: #1B2A4A !important;
+    }
+
+    /* Form widgets: force light backgrounds + navy text so dark mode
+       can't invert them. */
+    .stTextInput input,
+    .stDateInput input,
+    .stNumberInput input,
+    .stTextArea textarea,
+    .stSelectbox div[data-baseweb="select"] > div {
+        background-color: #FFFFFF !important;
+        color: #1B2A4A !important;
+        border-color: #D5DCE3 !important;
+    }
 
     /* Streamlit renders its built-in icons (like the password show/hide
        toggle) using Google's "Material Symbols" icon font, applied via
@@ -526,6 +592,24 @@ if 'current_page' not in st.session_state:
 # LOGIN PAGE
 # ============================================
 def login_page():
+    # Scoped to the login page only: locks the viewport so the login
+    # screen can never be scrolled. This style block is only emitted
+    # while login_page() runs, so it never applies to the dashboards
+    # (which need to scroll normally).
+    st.markdown("""
+        <style>
+            html, body,
+            [data-testid="stAppViewContainer"],
+            [data-testid="stMain"],
+            [data-testid="stMainBlockContainer"],
+            .main {
+                overflow: hidden !important;
+                height: 100vh !important;
+                max-height: 100vh !important;
+            }
+        </style>
+    """, unsafe_allow_html=True)
+
     # Faint watermark logo, sent behind all other login page content
     st.markdown(f'<img src="{SCHOOL_LOGO_URL}" class="login-watermark">', unsafe_allow_html=True)
 
