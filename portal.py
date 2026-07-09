@@ -26,16 +26,7 @@ SCHOOL_LOGO_URL = "https://raw.githubusercontent.com/MisheckMusiteyi/Focus-Oasis
 # ============================================
 st.markdown("""
 <style>
-    /* ── THEME LOCK ──────────────────────────────────────────────
-       Streamlit's Light/Dark toggle (and "Use system setting") works
-       by swapping a set of CSS custom properties on the root element
-       (--background-color, --text-color, --secondary-background-color,
-       --primary-color, etc.). Many built-in widgets — the top header
-       bar, dataframes, selectboxes, alerts — read those variables
-       directly rather than using colors we can target with our own
-       component-level rules. Overriding the variables themselves,
-       regardless of which data-theme is active, is what actually
-       makes the app immune to the toggle. */
+    /* ── THEME LOCK ────────────────────────────────────────────── */
     :root, html[data-theme="light"], html[data-theme="dark"],
     body[data-theme="light"], body[data-theme="dark"],
     .stApp[data-theme="light"], .stApp[data-theme="dark"] {
@@ -48,16 +39,11 @@ st.markdown("""
     html, body {
         background-color: #FFFFFF !important;
         color: #1B2A4A !important;
-        /* Stops native browser form controls (date pickers, scrollbars,
-           the eye icon, etc.) from rendering in dark mode even if the
-           OS/browser prefers dark. */
         color-scheme: light !important;
     }
 
     * { font-family: 'Georgia', 'Times New Roman', serif !important; }
 
-    /* Top header bar / toolbar / decoration strip Streamlit renders
-       above the app — these follow the theme unless pinned. */
     [data-testid="stHeader"],
     [data-testid="stToolbar"] {
         background-color: #FFFFFF !important;
@@ -73,17 +59,11 @@ st.markdown("""
         background-color: #FFFFFF !important;
     }
 
-    /* Generic text elements default to navy regardless of theme.
-       More specific rules further down (e.g. sidebar text, the navy
-       banner's white title) have higher CSS specificity and still win,
-       so this is safe to apply broadly. */
     p, span, label, li,
     .stMarkdown, [data-testid="stMarkdownContainer"] {
         color: #1B2A4A !important;
     }
 
-    /* Form widgets: force light backgrounds + navy text so dark mode
-       can't invert them. */
     .stTextInput input,
     .stDateInput input,
     .stNumberInput input,
@@ -94,28 +74,11 @@ st.markdown("""
         border-color: #D5DCE3 !important;
     }
 
-    /* Streamlit renders its built-in icons (like the password show/hide
-       toggle) using Google's "Material Symbols" icon font, applied via
-       an inline style="font-family: 'Material Symbols Rounded'" on the
-       icon element itself (confirmed via Streamlit's own source/issue
-       tracker). Our global serif !important rule above was overriding
-       that inline style, which broke the icon's font ligature and left
-       the raw icon name (e.g. "visibility") showing as literal text.
-       Restore the icon font specifically wherever Streamlit sets that
-       inline style, regardless of which testid/class wraps it. */
     [style*="Material Symbols"] {
         font-family: 'Material Symbols Rounded', 'Material Symbols Outlined',
                      'Material Symbols Sharp', sans-serif !important;
     }
 
-    /* Fallback in case the rule above doesn't match this Streamlit
-       version: "stTextInputRootElement" is the stable wrapper Streamlit
-       puts around a text input plus its optional reveal-password
-       button. Regular text inputs have no <button> in there at all, so
-       targeting "any button inside this wrapper" safely isolates just
-       the password toggle without needing to know its own testid/class.
-       We hide whatever raw text/icon it renders and draw a plain eye
-       glyph on top instead, so it can't show literal words again. */
     [data-testid="stTextInputRootElement"] button {
         position: relative !important;
         font-size: 0 !important;
@@ -156,10 +119,6 @@ st.markdown("""
     .stButton > button:hover {
         background-color: #2E86C1 !important;
     }
-    /* The generic "p { color: #1B2A4A }" theme-lock rule above also
-       matches the <p> Streamlit renders inside button labels, which
-       was overriding the button's inherited white text. Force it back
-       explicitly for anything inside a button. */
     .stButton > button p,
     .stButton > button span,
     .stButton > button div {
@@ -199,7 +158,6 @@ st.markdown("""
         border: 1px solid #2E86C1 !important;
     }
 
-    /* Lock the sidebar: hide the collapse arrow and the drag-to-resize handle */
     [data-testid="collapsedControl"] {
         display: none !important;
     }
@@ -228,18 +186,11 @@ st.markdown("""
         background-color: #1B2A4A !important;
         color: white !important;
     }
-    /* Same root cause as the button fix above: the generic p/span
-       color-lock rule also paints tab label text navy, which made it
-       invisible against the selected tab's navy background. Force it
-       white specifically inside the selected tab. */
     .stTabs [aria-selected="true"] p,
     .stTabs [aria-selected="true"] span,
     .stTabs [aria-selected="true"] div {
         color: white !important;
     }
-    /* The sliding underline indicator below the tabs is a separate
-       BaseWeb element that wasn't covered by our brand colors, so it
-       was falling back to Streamlit's default red. */
     [data-baseweb="tab-highlight"] {
         background-color: #2E86C1 !important;
     }
@@ -258,22 +209,6 @@ st.markdown("""
         border-left: 4px solid #f44336 !important;
     }
 
-    /* Fix overlapping text inside the file uploader dropzone — the
-       global serif font override changes text metrics enough that
-       Streamlit's default fixed-height layout can overlap lines,
-       and inside a narrow st.dialog the browse button can overlap
-       the instructions text too. Force everything into a column. */
-    /* Streamlit's built-in dropzone markup (icon + instructions text +
-       "Browse files" button) has been overlapping itself in narrow
-       containers like st.dialog, in a way that keeps changing shape
-       across attempts to patch its internal structure directly. Instead
-       of guessing at Streamlit's internal DOM, we take a version-proof
-       approach: hide every built-in visual element inside the dropzone
-       (opacity 0, so they still occupy space and stay functional), then
-       draw a single clean label ourselves with ::before/::after. The
-       real <input type="file"> stays on top, invisible but clickable,
-       so click-to-browse and drag-and-drop both keep working exactly
-       as before — only the visible text/icon changes. */
     [data-testid="stFileUploaderDropzone"] {
         position: relative !important;
         display: flex !important;
@@ -309,14 +244,14 @@ st.markdown("""
         padding: 0 8px;
     }
     [data-testid="stFileUploaderDropzone"]::after {
-        content: "PNG or JPG • up to 200MB";
+        content: "PNG or JPG  up to 200MB";
         display: block;
         color: #888;
         font-size: 12px;
         margin-top: 6px;
     }
 
-    /* ── Login Page Header Banner (navy, holds logo + white title) ── */
+    /* ── Login Page Header Banner ── */
     .top-shape {
         width: 100%;
         background-color: #1B2A4A;
@@ -327,14 +262,12 @@ st.markdown("""
         align-items: center;
         justify-content: center;
     }
-
     .top-shape img.school-logo {
         width: 72px;
         height: 72px;
         object-fit: contain;
         margin-bottom: 14px;
     }
-
     .top-shape .school-title-white {
         text-align: center;
         color: #FFFFFF !important;
@@ -343,7 +276,6 @@ st.markdown("""
         margin: 0;
         line-height: 1.15;
     }
-
     .top-shape .school-subtitle-white {
         text-align: center;
         color: #BFD9F0 !important;
@@ -363,13 +295,11 @@ st.markdown("""
         font-size: 14px;
         flex-direction: column;
     }
-
     .bottom-shape p {
         margin: 2px 0;
         color: white !important;
     }
 
-    /* Faint watermark logo sitting behind the login page content */
     .login-watermark {
         position: fixed;
         top: 50%;
@@ -403,11 +333,6 @@ st.markdown("""
     .card-body {
         background-color: white;
     }
-
-    /* Rows inside a card: faint navy/grey divider between rows,
-       plus alternating white / light-grey striping. Because all
-       rows for a card are now rendered inside ONE markdown block,
-       nth-child(even) works correctly here. */
     .detail-row {
         display: flex;
         justify-content: space-between;
@@ -493,20 +418,16 @@ def get_student_profile(username):
 def save_student_profile(username, display_name, photo_b64=""):
     client = connect_to_sheets()
     sheet = client.open("Focus Oasis Foundation").worksheet("Student Profiles")
-
     if not display_name:
         display_name = username
     if len(photo_b64) > 45000:
         st.warning("Image too large. Please use a smaller image.")
         photo_b64 = ""
-
     row_data = [username, display_name, photo_b64]
-
     try:
         cell = sheet.find(username, in_column=1)
     except Exception:
         cell = None
-
     if cell:
         sheet.update(f"A{cell.row}:C{cell.row}", [row_data])
     else:
@@ -556,12 +477,6 @@ def display_student_photo(photo_b64=None, size=120, name=""):
         """, unsafe_allow_html=True)
 
 def render_detail_card(header_label, rows):
-    """
-    Renders a card-box with a header and a set of label/value rows.
-    All rows are built into a SINGLE html string so that the
-    nth-child(even) striping and the row dividers apply correctly.
-    rows: list of (label, value) tuples
-    """
     rows_html = "".join(
         f'<div class="detail-row"><span class="detail-label">{label}</span>'
         f'<span class="detail-value">{value}</span></div>'
@@ -619,12 +534,6 @@ if 'current_page' not in st.session_state:
 # LOGIN PAGE
 # ============================================
 def login_page():
-    # Scoped to the login page only: tightens vertical spacing so the
-    # whole login screen fits in one viewport on most screens, and — if
-    # it still doesn't fit on a smaller screen — falls back to letting
-    # the page scroll rather than clipping content. The scrollbar itself
-    # is hidden for a cleaner look, but scrolling (wheel/touch/keys)
-    # still works, so nothing is ever inaccessible.
     st.markdown("""
         <style>
             html, body,
@@ -634,18 +543,14 @@ def login_page():
                 max-height: 100vh !important;
                 overflow-y: auto !important;
                 overflow-x: hidden !important;
-                scrollbar-width: none !important;      /* Firefox */
-                -ms-overflow-style: none !important;    /* old Edge/IE */
+                scrollbar-width: none !important;
+                -ms-overflow-style: none !important;
             }
             html::-webkit-scrollbar, body::-webkit-scrollbar,
             [data-testid="stAppViewContainer"]::-webkit-scrollbar,
             [data-testid="stMain"]::-webkit-scrollbar {
-                display: none !important;               /* Chrome/Safari */
+                display: none !important;
             }
-
-            /* Reclaim the large default top padding Streamlit reserves
-               for the header, and tighten the gaps between stacked
-               widgets, so more of the login form fits above the fold. */
             [data-testid="stMainBlockContainer"] {
                 padding-top: 1rem !important;
                 padding-bottom: 1rem !important;
@@ -653,7 +558,6 @@ def login_page():
             [data-testid="stVerticalBlock"] {
                 gap: 0.5rem !important;
             }
-
             .top-shape {
                 padding: 20px 20px 24px 20px !important;
                 margin-bottom: 14px !important;
@@ -677,11 +581,8 @@ def login_page():
         </style>
     """, unsafe_allow_html=True)
 
-    # Faint watermark logo, sent behind all other login page content
     st.markdown(f'<img src="{SCHOOL_LOGO_URL}" class="login-watermark">', unsafe_allow_html=True)
 
-    # Navy header banner: small logo + institution name/subtitle in white,
-    # all in ONE markdown call so it renders as a single solid block
     st.markdown(f"""
         <div class="top-shape">
             <img src="{SCHOOL_LOGO_URL}" class="school-logo">
@@ -690,7 +591,6 @@ def login_page():
         </div>
     """, unsafe_allow_html=True)
 
-    # Login fields (no wrapping card box — sit directly on the page)
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
         login_type = st.radio("Login as:", ["Student", "Admin"], horizontal=True)
@@ -733,7 +633,6 @@ def login_page():
                 else:
                     st.error("Invalid admin username or password.")
 
-    # Bottom decorative shape with footer
     st.markdown("""
         <div class="bottom-shape">
             <p>© 2026 Focus Oasis Foundation</p>
@@ -745,8 +644,6 @@ def login_page():
 # STUDENT DASHBOARD
 # ============================================
 def student_dashboard():
-    # Same navy top banner used on the login page, for a consistent look
-    # across the portal.
     st.markdown(f"""
         <div class="top-shape">
             <img src="{SCHOOL_LOGO_URL}" class="school-logo">
@@ -761,43 +658,38 @@ def student_dashboard():
     students_df = load_data("Students")
     fee_payments_df = load_data("Fee Payments")
 
-    # Try loading Performance tab gracefully
     try:
         performance_df = load_data("Performance")
     except:
         performance_df = pd.DataFrame()
+
+    try:
+        attendance_df = load_data("Attendance View")
+    except:
+        attendance_df = pd.DataFrame()
 
     student_info = students_df[students_df['Student Name'] == st.session_state.student_name]
 
     if len(student_info) > 0:
         student_row = student_info.iloc[0]
         student_class = student_row.get('Class', st.session_state.student_class)
-
         all_payments = fee_payments_df[fee_payments_df['Student Name'] == st.session_state.student_name]
         total_paid = all_payments['Amount Paid'].sum()
-
         current_month = date.today().strftime('%B %Y')
         current_term_paid = all_payments[all_payments['Month Covered'] == current_month]['Amount Paid'].sum()
-
         prev_payments = all_payments[all_payments['Month Covered'] != current_month]
-
-        # Fee structure lookup
         try:
             fee_structure_df = load_data("Fee Structure")
             monthly_fee = fee_structure_df[fee_structure_df['Class'] == student_class]['Monthly Fee'].sum()
         except:
             monthly_fee = 50
-
         months_with_payments = set(all_payments['Month Covered'].unique()) if len(all_payments) > 0 else set()
         months_enrolled = max(len(months_with_payments), 1)
-
         prev_terms_fees = (months_enrolled - 1) * monthly_fee if months_enrolled > 1 else 0
         prev_terms_paid = prev_payments['Amount Paid'].sum() if len(prev_payments) > 0 else 0
         prev_balance = max(0, prev_terms_fees - prev_terms_paid)
-
         total_fees_due = months_enrolled * monthly_fee
         overall_balance = max(0, total_fees_due - total_paid)
-
         current_term_fee = monthly_fee
     else:
         student_class = st.session_state.student_class
@@ -810,6 +702,19 @@ def student_dashboard():
 
     my_performance = performance_df[performance_df['Student Name'] == st.session_state.student_name] if len(performance_df) > 0 else pd.DataFrame()
 
+    # Get this student's attendance row
+    my_attendance_row = None
+    attendance_dates = []
+    attendance_statuses = []
+    if len(attendance_df) > 0:
+        student_col = attendance_df.columns[0]
+        date_cols = [c for c in attendance_df.columns[1:] if c.strip() != '']
+        match = attendance_df[attendance_df[student_col] == st.session_state.student_name]
+        if len(match) > 0:
+            my_attendance_row = match.iloc[0]
+            attendance_dates = date_cols
+            attendance_statuses = [str(my_attendance_row[d]).strip() for d in date_cols]
+
     # Header
     col1, col2 = st.columns([1.4, 3.6])
     with col1:
@@ -818,10 +723,8 @@ def student_dashboard():
         st.title(f"Welcome, {display_name}")
     st.divider()
 
-    # Page routing based on sidebar selection
+    # Page routing
     if st.session_state.current_page == "My Dashboard":
-
-        # Personal Details
         render_detail_card("PERSONAL DETAILS", [
             ("Full Name", st.session_state.student_name),
             ("Date of Birth", student_row.get("Date of Birth", "N/A") if len(student_info) > 0 else "N/A"),
@@ -830,16 +733,12 @@ def student_dashboard():
             ("Guardian Name", student_row.get("Guardian Name", "N/A") if len(student_info) > 0 else "N/A"),
             ("Guardian Phone", student_row.get("Guardian Phone", "N/A") if len(student_info) > 0 else "N/A"),
         ])
-
-        # Academic Details
         render_detail_card("ACADEMIC DETAILS", [
             ("Student Number", student_row.get("Student Number", "N/A") if len(student_info) > 0 else "N/A"),
             ("Class", student_class),
             ("Registration Status", "Active"),
             ("Academic Year", "2026"),
         ])
-
-        # Financial Details
         balance_color = "#4CAF50" if overall_balance <= 0 else "#f44336"
         render_detail_card("FINANCIAL DETAILS", [
             ("Current Term Fees", f"${current_term_fee:,.0f}"),
@@ -880,12 +779,9 @@ def student_dashboard():
     elif st.session_state.current_page == "My Performance":
         st.subheader("My Performance")
         if len(my_performance) > 0:
-            # Performance table
             perf_display = my_performance[['Date', 'Activity', 'Mark', 'Comment']].copy()
             perf_display = perf_display.sort_values('Date', ascending=False)
             st.dataframe(perf_display, use_container_width=True, hide_index=True)
-
-            # Summary metrics
             try:
                 marks = my_performance['Mark'].apply(lambda x: float(str(x).replace('%', '')))
                 avg_mark = marks.mean()
@@ -900,6 +796,37 @@ def student_dashboard():
         else:
             st.info("No performance records found.")
 
+    elif st.session_state.current_page == "My Attendance":
+        st.subheader("My Attendance")
+        if my_attendance_row is not None and len(attendance_dates) > 0:
+            attendance_rows = []
+            present_count = 0
+            absent_count = 0
+            for i, d in enumerate(attendance_dates):
+                status = attendance_statuses[i]
+                if '✅' in status:
+                    present_count += 1
+                elif '❌' in status:
+                    absent_count += 1
+                attendance_rows.append((str(d), status))
+            # Only count days that actually have a recorded status (present + absent)
+            # as "tracked" days. Date columns with blank/unmarked cells (e.g. future
+            # dates or days not yet taken) must NOT be included in the denominator,
+            # otherwise the attendance rate is silently deflated.
+            marked_days = present_count + absent_count
+            attendance_rate = f"{(present_count / marked_days * 100):.0f}%" if marked_days > 0 else "N/A"
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.metric("Days Tracked", marked_days)
+            with col2:
+                st.metric("Days Present", present_count)
+            with col3:
+                st.metric("Attendance Rate", attendance_rate)
+            st.markdown("---")
+            render_detail_card("ATTENDANCE RECORD", attendance_rows)
+        else:
+            st.info("No attendance records found.")
+
     # Footer
     st.markdown("""
     <div class="bottom-shape">
@@ -912,7 +839,6 @@ def student_dashboard():
     with st.sidebar:
         st.markdown("## Focus Oasis")
         st.markdown("---")
-        # School logo in the sidebar (replaces the student profile photo)
         st.markdown(f"""
             <div style="text-align:center;">
                 <img src="{SCHOOL_LOGO_URL}"
@@ -926,6 +852,9 @@ def student_dashboard():
 
         if st.button("My Dashboard", use_container_width=True):
             st.session_state.current_page = "My Dashboard"
+            st.rerun()
+        if st.button("My Attendance", use_container_width=True):
+            st.session_state.current_page = "My Attendance"
             st.rerun()
         if st.button("My Performance", use_container_width=True):
             st.session_state.current_page = "My Performance"
@@ -950,8 +879,6 @@ def student_dashboard():
 # ADMIN DASHBOARD
 # ============================================
 def admin_dashboard():
-    # Same navy top banner used on the login page, for a consistent look
-    # across the portal.
     st.markdown(f"""
         <div class="top-shape">
             <img src="{SCHOOL_LOGO_URL}" class="school-logo">
