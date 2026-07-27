@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Focus Oasis Foundation - Portal Login</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            background: linear-gradient(135deg, #1b2a4a 0%, #2e86c1 100%);
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen text-[#1b2a4a] antialiased">
+
+    <!-- Top decorative brand bar -->
+    <header class="w-full bg-[#1b2a4a] text-white py-6 shadow-md text-center border-b-4 border-[#2e86c1]">
+        <div class="flex flex-col items-center justify-center">
+            <!-- Simulated Logo icon -->
+            <div class="w-16 h-16 bg-[#2e86c1] rounded-full flex items-center justify-center text-white mb-3 shadow-lg">
+                <i class="fa-solid fa-graduation-cap text-3xl"></i>
+            </div>
+            <h1 class="text-3xl md:text-4xl font-bold tracking-wide">Focus Oasis Foundation</h1>
+            <p class="text-sm md:text-base text-sky-200 mt-1 uppercase tracking-widest font-sans">Student & Admin Portal</p>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-grow flex items-center justify-center p-6">
+        <div class="w-full max-w-md bg-white rounded-xl shadow-2xl overflow-hidden border border-slate-100 transform transition duration-500 hover:scale-[1.01]">
+
+            <!-- Login Type Selector Tab -->
+            <div class="flex border-b border-slate-200 font-sans">
+                <button id="tabStudent" onclick="switchTab('student')" class="w-1/2 py-4 text-center font-semibold text-lg border-b-2 border-[#1b2a4a] text-[#1b2a4a] focus:outline-none transition duration-150">
+                    <i class="fa-solid fa-user-graduate mr-2"></i>Student
+                </button>
+                <button id="tabAdmin" onclick="switchTab('admin')" class="w-1/2 py-4 text-center font-semibold text-lg text-slate-400 hover:text-slate-600 border-b-2 border-transparent focus:outline-none transition duration-150">
+                    <i class="fa-solid fa-user-tie mr-2"></i>Admin
+                </button>
+            </div>
+
+            <!-- Form Body -->
+            <div class="p-8">
+                <!-- Status/Error Alerts -->
+                <div id="alertBox" class="hidden mb-6 p-4 rounded-lg flex items-center text-sm font-medium border"></div>
+
+                <!-- Form -->
+                <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-6">
+                    <div>
+                        <label for="username" class="block text-sm font-bold tracking-wide text-[#1b2a4a] uppercase mb-2">Username</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
+                                <i class="fa-solid fa-user"></i>
+                            </span>
+                            <input type="text" id="username" required placeholder="Enter username"
+                                class="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2e86c1] focus:border-[#2e86c1] transition text-base">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="password" class="block text-sm font-bold tracking-wide text-[#1b2a4a] uppercase mb-2">Password</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
+                                <i class="fa-solid fa-lock"></i>
+                            </span>
+                            <input type="password" id="password" required placeholder="••••••••"
+                                class="w-full pl-10 pr-10 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2e86c1] focus:border-[#2e86c1] transition text-base">
+                            <button type="button" onclick="togglePasswordVisibility()" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none">
+                                <i id="passwordEye" class="fa-solid fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" id="btnSubmit" class="w-full py-3.5 bg-[#1b2a4a] hover:bg-[#2e86c1] text-white font-bold text-lg rounded-lg shadow-md transition duration-150 ease-in-out transform flex items-center justify-center space-x-2">
+                        <span>Secure Log In</span>
+                        <i class="fa-solid fa-arrow-right-to-bracket ml-2 text-sm"></i>
+                    </button>
+                </form>
+
+                <!-- Initial Admin Setup Prompt (Saves first installation setup) -->
+                <div id="seedAdminDiv" class="hidden mt-6 text-center border-t border-slate-100 pt-4">
+                    <p class="text-sm text-slate-500 font-sans">Is this a fresh install? <a href="#" onclick="showSeedModal()" class="text-[#2e86c1] hover:underline font-semibold">Setup Admin User</a></p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Seed Admin Modal -->
+    <div id="seedModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+        <div class="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full relative border border-slate-100">
+            <button onclick="hideSeedModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-xl focus:outline-none">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 class="text-2xl font-bold mb-4 text-[#1b2a4a] border-b border-slate-100 pb-2">Initial Admin Setup</h3>
+            <p class="text-sm text-slate-500 mb-6 font-sans">Set up your very first system administrator credentials below. Once submitted, you can log in as Admin.</p>
+
+            <form onsubmit="handleSeedAdmin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold uppercase mb-1 text-[#1b2a4a]">Admin Username</label>
+                    <input type="text" id="seedUsername" required class="w-full p-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#2e86c1] focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase mb-1 text-[#1b2a4a]">Email Address</label>
+                    <input type="email" id="seedEmail" required class="w-full p-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#2e86c1] focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase mb-1 text-[#1b2a4a]">Secure Password</label>
+                    <input type="password" id="seedPassword" required class="w-full p-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#2e86c1] focus:outline-none">
+                </div>
+                <button type="submit" class="w-full py-2.5 bg-[#2e86c1] hover:bg-[#1b2a4a] text-white font-semibold rounded-lg transition mt-4">Create Admin Account</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer shape -->
+    <footer class="w-full bg-[#1b2a4a] text-sky-200 py-6 text-center border-t border-slate-800 font-sans text-sm">
+        <p>© 2026 Focus Oasis Foundation. All Rights Reserved.</p>
+        <p class="text-xs text-sky-400/70 mt-1">Industry Standard Cryptography • Secure Connection Pool • PostgreSQL Ready</p>
+    </footer>
+
+    <!-- App JavaScript Controller integration -->
+    <script src="app.js"></script>
+    <script>
+        // Set current log in context (student by default)
+        let loginType = 'student';
+
+        function switchTab(type) {
+            loginType = type;
+            const tabSt = document.getElementById('tabStudent');
+            const tabAd = document.getElementById('tabAdmin');
+
+            if (type === 'student') {
+                tabSt.className = "w-1/2 py-4 text-center font-semibold text-lg border-b-2 border-[#1b2a4a] text-[#1b2a4a] focus:outline-none transition duration-150";
+                tabAd.className = "w-1/2 py-4 text-center font-semibold text-lg text-slate-400 hover:text-slate-600 border-b-2 border-transparent focus:outline-none transition duration-150";
+                document.getElementById('seedAdminDiv').classList.add('hidden');
+            } else {
+                tabAd.className = "w-1/2 py-4 text-center font-semibold text-lg border-b-2 border-[#1b2a4a] text-[#1b2a4a] focus:outline-none transition duration-150";
+                tabSt.className = "w-1/2 py-4 text-center font-semibold text-lg text-slate-400 hover:text-slate-600 border-b-2 border-transparent focus:outline-none transition duration-150";
+                document.getElementById('seedAdminDiv').classList.remove('hidden');
+            }
+        }
+
+        function togglePasswordVisibility() {
+            const pwd = document.getElementById('password');
+            const eye = document.getElementById('passwordEye');
+            if (pwd.type === 'password') {
+                pwd.type = 'text';
+                eye.className = 'fa-solid fa-eye-slash';
+            } else {
+                pwd.type = 'password';
+                eye.className = 'fa-solid fa-eye';
+            }
+        }
+
+        function showSeedModal() {
+            document.getElementById('seedModal').classList.remove('hidden');
+        }
+
+        function hideSeedModal() {
+            document.getElementById('seedModal').classList.add('hidden');
+        }
+
+        // Handle Logins using controller in app.js
+        async function handleLogin(e) {
+            e.preventDefault();
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+            const alertBox = document.getElementById('alertBox');
+
+            // Set loading state on button
+            const btn = document.getElementById('btnSubmit');
+            const originalContent = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-circle-notch animate-spin mr-2"></i> Logging in...`;
+
+            try {
+                const response = await AppController.login(user, pass);
+                if (response.success) {
+                    alertBox.className = "mb-6 p-4 rounded-lg flex items-center text-sm font-medium border bg-emerald-50 border-emerald-200 text-emerald-800";
+                    alertBox.innerHTML = `<i class="fa-solid fa-circle-check mr-2 text-base"></i> Security Token generated. Redirecting...`;
+                    alertBox.classList.remove('hidden');
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 800);
+                } else {
+                    alertBox.className = "mb-6 p-4 rounded-lg flex items-center text-sm font-medium border bg-rose-50 border-rose-200 text-rose-800";
+                    alertBox.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-2 text-base"></i> ${response.error}`;
+                    alertBox.classList.remove('hidden');
+                }
+            } catch (err) {
+                alertBox.className = "mb-6 p-4 rounded-lg flex items-center text-sm font-medium border bg-rose-50 border-rose-200 text-rose-800";
+                alertBox.innerHTML = `<i class="fa-solid fa-circle-exclamation mr-2 text-base"></i> Connection to Advanced Focus API failed.`;
+                alertBox.classList.remove('hidden');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalContent;
+            }
+        }
+
+        async function handleSeedAdmin(e) {
+            e.preventDefault();
+            const user = document.getElementById('seedUsername').value;
+            const email = document.getElementById('seedEmail').value;
+            const pass = document.getElementById('seedPassword').value;
+
+            try {
+                const res = await AppController.seedAdmin(user, email, pass);
+                if (res.success) {
+                    alert("Admin setup completed! You can now log in using your Admin credentials.");
+                    hideSeedModal();
+                } else {
+                    alert("Setup Error: " + res.error);
+                }
+            } catch (err) {
+                alert("Failed to connect to API to seed administrator.");
+            }
+        }
+
+        // Redirect if already logged in
+        window.onload = function() {
+            if (AppController.isAuthenticated()) {
+                window.location.href = 'dashboard.html';
+            }
+        };
+    </script>
+</body>
+</html>

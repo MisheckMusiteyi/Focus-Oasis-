@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Focus Oasis Foundation</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            background-color: #f4f6f9;
+        }
+        .sidebar-active {
+            background-color: #2e86c1;
+            color: white;
+        }
+    </style>
+</head>
+<body class="min-h-screen text-[#1b2a4a] antialiased flex flex-col">
+
+    <!-- Top Navigation Header -->
+    <header class="bg-[#1b2a4a] text-white py-4 px-6 shadow-md flex justify-between items-center border-b-4 border-[#2e86c1]">
+        <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 bg-[#2e86c1] rounded-full flex items-center justify-center text-white">
+                <i class="fa-solid fa-graduation-cap text-lg"></i>
+            </div>
+            <div>
+                <h1 class="text-xl md:text-2xl font-bold tracking-wide">Focus Oasis Foundation</h1>
+                <p class="text-xs text-sky-200 uppercase tracking-widest font-sans">Secure Student & Admin Workspace</p>
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-4">
+            <span id="headerUserDisplayName" class="font-sans font-semibold text-sky-100 hidden md:inline">Loading...</span>
+            <button onclick="handleLogout()" class="bg-rose-600 hover:bg-rose-700 text-white font-bold py-2 px-4 rounded-lg text-sm flex items-center space-x-2 transition">
+                <i class="fa-solid fa-right-from-bracket"></i>
+                <span class="hidden md:inline">Sign Out</span>
+            </button>
+        </div>
+    </header>
+
+    <div class="flex-grow flex flex-col md:flex-row">
+        <!-- Sidebar Navigation -->
+        <aside class="w-full md:w-64 bg-[#1b2a4a] text-white p-6 space-y-2 flex flex-col border-r border-[#1b2a4a]">
+            <div class="text-center pb-6 border-b border-sky-900/50">
+                <div id="profilePhotoWrapper" class="w-24 h-24 mx-auto bg-slate-200 rounded-full mb-3 flex items-center justify-center text-[#1b2a4a] text-3xl font-bold overflow-hidden border-2 border-[#2e86c1]">
+                    <!-- Image or Initials -->
+                    <span id="profileInitials">?</span>
+                </div>
+                <h3 id="sidebarDisplayName" class="font-bold text-lg leading-tight">Name</h3>
+                <p id="sidebarRoleLabel" class="text-xs text-sky-300 uppercase tracking-wider font-sans mt-1">Role</p>
+            </div>
+
+            <!-- Student Sidebar Menu Links -->
+            <nav id="studentMenu" class="hidden space-y-1 font-sans text-sm font-semibold pt-4 flex-grow">
+                <button onclick="switchSection('student-dashboard')" id="btn-student-dashboard" class="sidebar-active w-full text-left py-3 px-4 rounded-lg flex items-center space-x-3 transition hover:bg-sky-900/40">
+                    <i class="fa-solid fa-house-user w-5 text-center"></i><span>My Dashboard</span>
+                </button>
+                <button onclick="switchSection('student-attendance')" id="btn-student-attendance" class="w-full text-left py-3 px-4 rounded-lg flex items-center space-x-3 transition hover:bg-sky-900/40">
+                    <i class="fa-solid fa-calendar-check w-5 text-center"></i><span>My Attendance</span>
+                </button>
+                <button onclick="switchSection('student-performance')" id="btn-student-performance" class="w-full text-left py-3 px-4 rounded-lg flex items-center space-x-3 transition hover:bg-sky-900/40">
+                    <i class="fa-solid fa-chart-line w-5 text-center"></i><span>My Performance</span>
+                </button>
+                <button onclick="switchSection('student-fees')" id="btn-student-fees" class="w-full text-left py-3 px-4 rounded-lg flex items-center space-x-3 transition hover:bg-sky-900/40">
+                    <i class="fa-solid fa-file-invoice-dollar w-5 text-center"></i><span>Fee Summary</span>
+                </button>
+                <button onclick="showProfileSettingsModal()" class="w-full text-left py-3 px-4 rounded-lg flex items-center space-x-3 transition hover:bg-sky-900/40 mt-6 border-t border-sky-900/50 pt-6">
+                    <i class="fa-solid fa-user-gear w-5 text-center"></i><span>Profile Settings</span>
+                </button>
+            </nav>
+
+            <!-- Admin Sidebar Menu Links -->
+            <nav id="adminMenu" class="hidden space-y-1 font-sans text-sm font-semibold pt-4 flex-grow">
+                <button onclick="switchSection('admin-overview')" id="btn-admin-overview" class="sidebar-active w-full text-left py-3 px-4 rounded-lg flex items-center space-x-3 transition hover:bg-sky-900/40">
+                    <i class="fa-solid fa-gauge w-5 text-center"></i><span>School Overview</span>
+                </button>
+                <button onclick="switchSection('admin-students')" id="btn-admin-students" class="w-full text-left py-3 px-4 rounded-lg flex items-center space-x-3 transition hover:bg-sky-900/40">
+                    <i class="fa-solid fa-users w-5 text-center"></i><span>Students Directory</span>
+                </button>
+                <button onclick="switchSection('admin-finances')" id="btn-admin-finances" class="w-full text-left py-3 px-4 rounded-lg flex items-center space-x-3 transition hover:bg-sky-900/40">
+                    <i class="fa-solid fa-scale-balanced w-5 text-center"></i><span>Financials Manager</span>
+                </button>
+            </nav>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="flex-grow p-6 md:p-8 max-w-7xl mx-auto w-full">
+
+            <!-- SECTION: STUDENT DASHBOARD -->
+            <section id="student-dashboard" class="hidden space-y-6">
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <h2 class="text-3xl font-bold mb-1">Personal Details</h2>
+                    <p class="text-sm text-slate-500 font-sans mb-6">Confidential details registered in secure SQL database</p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="border border-slate-100 rounded-lg p-4 bg-slate-50/50 flex justify-between">
+                            <span class="font-sans text-slate-500">Full Name</span>
+                            <span id="studDetailsName" class="font-bold">...</span>
+                        </div>
+                        <div class="border border-slate-100 rounded-lg p-4 bg-slate-50/50 flex justify-between">
+                            <span class="font-sans text-slate-500">Date of Birth</span>
+                            <span id="studDetailsDob" class="font-bold">...</span>
+                        </div>
+                        <div class="border border-slate-100 rounded-lg p-4 bg-slate-50/50 flex justify-between">
+                            <span class="font-sans text-slate-500">Gender</span>
+                            <span id="studDetailsGender" class="font-bold">...</span>
+                        </div>
+                        <div class="border border-slate-100 rounded-lg p-4 bg-slate-50/50 flex justify-between">
+                            <span class="font-sans text-slate-500">Home Address</span>
+                            <span id="studDetailsAddress" class="font-bold">...</span>
+                        </div>
+                        <div class="border border-slate-100 rounded-lg p-4 bg-slate-50/50 flex justify-between">
+                            <span class="font-sans text-slate-500">Guardian Name</span>
+                            <span id="studDetailsGuardian" class="font-bold">...</span>
+                        </div>
+                        <div class="border border-slate-100 rounded-lg p-4 bg-slate-50/50 flex justify-between">
+                            <span class="font-sans text-slate-500">Guardian Phone</span>
+                            <span id="studDetailsPhone" class="font-bold">...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <h2 class="text-3xl font-bold mb-1">Academic Registration</h2>
+                    <p class="text-sm text-slate-500 font-sans mb-6 font-semibold uppercase tracking-wide">Secure Academic Records</p>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div class="border border-slate-100 rounded-lg p-4 bg-slate-50 text-center">
+                            <div class="text-[#2e86c1] font-bold text-lg uppercase font-sans mb-1">Student ID</div>
+                            <div id="studRegId" class="text-2xl font-bold">...</div>
+                        </div>
+                        <div class="border border-slate-100 rounded-lg p-4 bg-slate-50 text-center">
+                            <div class="text-[#2e86c1] font-bold text-lg uppercase font-sans mb-1">Class Assigned</div>
+                            <div id="studRegClass" class="text-2xl font-bold">...</div>
+                        </div>
+                        <div class="border border-slate-100 rounded-lg p-4 bg-slate-50 text-center">
+                            <div class="text-[#2e86c1] font-bold text-lg uppercase font-sans mb-1">Account Status</div>
+                            <div id="studRegStatus" class="text-2xl font-bold text-emerald-600">Active</div>
+                        </div>
+                        <div class="border border-slate-100 rounded-lg p-4 bg-slate-50 text-center">
+                            <div class="text-[#2e86c1] font-bold text-lg uppercase font-sans mb-1">Academic Year</div>
+                            <div class="text-2xl font-bold">2026</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION: STUDENT ATTENDANCE -->
+            <section id="student-attendance" class="hidden space-y-6">
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <h2 class="text-3xl font-bold mb-1">My Attendance Tracker</h2>
+                    <p class="text-sm text-slate-500 font-sans mb-6">Real-time attendance ledger synchronized with school registrars</p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        <div class="bg-slate-50 p-6 rounded-xl border border-slate-100 text-center">
+                            <div class="text-[#2e86c1] font-bold font-sans uppercase mb-1">Total Days Tracked</div>
+                            <div id="studAttDaysTracked" class="text-4xl font-bold">0</div>
+                        </div>
+                        <div class="bg-slate-50 p-6 rounded-xl border border-slate-100 text-center">
+                            <div class="text-[#2e86c1] font-bold font-sans uppercase mb-1">Days Present</div>
+                            <div id="studAttDaysPresent" class="text-4xl font-bold text-emerald-600">0</div>
+                        </div>
+                        <div class="bg-slate-50 p-6 rounded-xl border border-slate-100 text-center">
+                            <div class="text-[#2e86c1] font-bold font-sans uppercase mb-1">Attendance Rate</div>
+                            <div id="studAttRate" class="text-4xl font-bold text-blue-600">N/A</div>
+                        </div>
+                    </div>
+
+                    <h3 class="text-xl font-bold mb-4 border-b pb-2 text-[#1b2a4a]">Chronological History</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 font-sans border-b border-slate-200">
+                                    <th class="p-4 font-bold text-sm text-[#1b2a4a]">Date Recorded</th>
+                                    <th class="p-4 font-bold text-sm text-[#1b2a4a]">Attendance Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="studAttTableBody" class="font-sans text-sm">
+                                <tr>
+                                    <td colspan="2" class="p-4 text-center text-slate-400">No attendance records found.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION: STUDENT PERFORMANCE -->
+            <section id="student-performance" class="hidden space-y-6">
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <h2 class="text-3xl font-bold mb-1">My Performance Records</h2>
+                    <p class="text-sm text-slate-500 font-sans mb-6">Chronological grading, activities, and instructor comments</p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                        <div class="bg-slate-50 p-6 rounded-xl border border-slate-100 text-center">
+                            <div class="text-[#2e86c1] font-bold font-sans uppercase mb-1">Activities Logged</div>
+                            <div id="studPerfCount" class="text-4xl font-bold">0</div>
+                        </div>
+                        <div class="bg-slate-50 p-6 rounded-xl border border-slate-100 text-center">
+                            <div class="text-[#2e86c1] font-bold font-sans uppercase mb-1">Average Grade Score</div>
+                            <div id="studPerfAverage" class="text-4xl font-bold text-emerald-600">N/A</div>
+                        </div>
+                    </div>
+
+                    <h3 class="text-xl font-bold mb-4 border-b pb-2 text-[#1b2a4a]">Detailed Grades Ledger</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 font-sans border-b border-slate-200">
+                                    <th class="p-4 font-bold text-sm text-[#1b2a4a]">Date</th>
+                                    <th class="p-4 font-bold text-sm text-[#1b2a4a]">Subject / Activity</th>
+                                    <th class="p-4 font-bold text-sm text-[#1b2a4a]">Grade Mark</th>
+                                    <th class="p-4 font-bold text-sm text-[#1b2a4a]">Instructor Remarks</th>
+                                </tr>
+                            </thead>
+                            <tbody id="studPerfTableBody" class="font-sans text-sm">
+                                <tr>
+                                    <td colspan="4" class="p-4 text-center text-slate-400">No grade reports recorded.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION: STUDENT FEES -->
+            <section id="student-fees" class="hidden space-y-6">
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <h2 class="text-3xl font-bold mb-1">Financial Invoicing & Payments</h2>
+                    <p class="text-sm text-slate-500 font-sans mb-6">Secure student ledger tracking monthly billing and balances</p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        <div class="bg-slate-50 p-6 rounded-xl border border-slate-100 text-center">
+                            <div class="text-[#2e86c1] font-bold font-sans uppercase mb-1">Total Fees Payable</div>
+                            <div id="studFeesDue" class="text-4xl font-bold">$0</div>
+                        </div>
+                        <div class="bg-slate-50 p-6 rounded-xl border border-slate-100 text-center">
+                            <div class="text-[#2e86c1] font-bold font-sans uppercase mb-1">Fees Paid to Date</div>
+                            <div id="studFeesPaid" class="text-4xl font-bold text-emerald-600">$0</div>
+                        </div>
+                        <div class="bg-slate-50 p-6 rounded-xl border border-slate-100 text-center">
+                            <div class="text-[#2e86c1] font-bold font-sans uppercase mb-1">Outstanding Balance</div>
+                            <div id="studFeesBalance" class="text-4xl font-bold">0</div>
+                        </div>
+                    </div>
+
+                    <h3 class="text-xl font-bold mb-4 border-b pb-2 text-[#1b2a4a]">Historical Payments Log</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 font-sans border-b border-slate-200">
+                                    <th class="p-4 font-bold text-sm text-[#1b2a4a]">Payment Date</th>
+                                    <th class="p-4 font-bold text-sm text-[#1b2a4a]">Term / Month Covered</th>
+                                    <th class="p-4 font-bold text-sm text-[#1b2a4a]">Payment Method</th>
+                                    <th class="p-4 font-bold text-sm text-[#1b2a4a]">Amount Paid</th>
+                                </tr>
+                            </thead>
+                            <tbody id="studPaymentsTableBody" class="font-sans text-sm">
+                                <tr>
+                                    <td colspan="4" class="p-4 text-center text-slate-400">No payment history found.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION: ADMIN OVERVIEW -->
+            <section id="admin-overview" class="hidden space-y-6">
+                <!-- Overview Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 text-center">
+                        <div class="text-slate-400 font-bold font-sans uppercase mb-1 text-xs">Total Students</div>
+                        <div id="adminStatStudents" class="text-4xl font-bold text-[#1b2a4a]">0</div>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 text-center">
+                        <div class="text-slate-400 font-bold font-sans uppercase mb-1 text-xs">Active Classes</div>
+                        <div id="adminStatClasses" class="text-4xl font-bold text-[#1b2a4a]">0</div>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 text-center">
+                        <div class="text-slate-400 font-bold font-sans uppercase mb-1 text-xs">Fees Collected</div>
+                        <div id="adminStatFees" class="text-4xl font-bold text-emerald-600">$0</div>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 text-center">
+                        <div class="text-slate-400 font-bold font-sans uppercase mb-1 text-xs">Net Financial Position</div>
+                        <div id="adminStatNet" class="text-4xl font-bold text-blue-600">$0</div>
+                    </div>
+                </div>
+
+                <!-- Financial Balance Sheet Charts and Classes list -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                        <h3 class="text-xl font-bold mb-4 border-b pb-2">Students Density by Grade</h3>
+                        <div id="adminClassesDistributionDiv" class="space-y-4 font-sans text-sm">
+                            <p class="text-slate-400">No students loaded.</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                        <h3 class="text-xl font-bold mb-4 border-b pb-2">Financial Breakdown</h3>
+                        <div class="space-y-4 font-sans text-sm">
+                            <div class="flex justify-between p-3 border-b border-slate-100">
+                                <span class="font-semibold text-slate-500">Total Fees Collected</span>
+                                <span id="adminBreakdownFees" class="font-bold text-emerald-600">$0</span>
+                            </div>
+                            <div class="flex justify-between p-3 border-b border-slate-100">
+                                <span class="font-semibold text-slate-500">Other Miscellaneous Income</span>
+                                <span id="adminBreakdownIncome" class="font-bold text-emerald-600">$0</span>
+                            </div>
+                            <div class="flex justify-between p-3 border-b border-slate-100">
+                                <span class="font-semibold text-slate-500">Total Recorded Expenses</span>
+                                <span id="adminBreakdownExpenses" class="font-bold text-rose-600">$0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION: ADMIN STUDENTS DIRECTORY -->
+            <section id="admin-students" class="hidden space-y-6">
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
+                    <div>
+                        <h2 class="text-3xl font-bold mb-1">Student Registry Directory</h2>
+                        <p class="text-sm text-slate-500 font-sans">Full view and management of student accounts securely cached in PostgreSQL</p>
+                    </div>
+                    <button onclick="showCreateStudentModal()" class="bg-[#1b2a4a] hover:bg-[#2e86c1] text-white py-2.5 px-5 rounded-lg font-semibold font-sans text-sm transition shadow-md flex items-center space-x-2">
+                        <i class="fa-solid fa-user-plus"></i><span>Register Student</span>
+                    </button>
+                </div>
+
+                <!-- Students Table List -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-200 font-sans text-sm">
+                                    <th class="p-4 font-bold">ID / Number</th>
+                                    <th class="p-4 font-bold">Full Name</th>
+                                    <th class="p-4 font-bold">Class</th>
+                                    <th class="p-4 font-bold">Guardian Context</th>
+                                    <th class="p-4 font-bold">Academic Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminStudentsTableBody" class="font-sans text-sm">
+                                <tr>
+                                    <td colspan="5" class="p-4 text-center text-slate-400">Loading registry details...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION: ADMIN FINANCES MANAGER -->
+            <section id="admin-finances" class="hidden space-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- School Expenses Entry and List -->
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                        <div class="flex justify-between items-center mb-6 border-b pb-3">
+                            <h3 class="text-xl font-bold">Operating Expenses</h3>
+                            <button onclick="showAddExpenseModal()" class="bg-rose-600 hover:bg-rose-700 text-white font-semibold py-2 px-4 rounded-lg text-xs font-sans transition">Record Expense</button>
+                        </div>
+                        <div class="overflow-y-auto max-h-96">
+                            <table class="w-full text-left border-collapse font-sans text-sm">
+                                <thead>
+                                    <tr class="bg-slate-50 border-b border-slate-200 font-bold">
+                                        <th class="p-3">Date</th>
+                                        <th class="p-3">Category</th>
+                                        <th class="p-3 text-right">Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="adminExpensesTableBody">
+                                    <tr>
+                                        <td colspan="3" class="p-3 text-center text-slate-400">No expenses recorded yet.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Miscellaneous Income Entry and List -->
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                        <div class="flex justify-between items-center mb-6 border-b pb-3">
+                            <h3 class="text-xl font-bold">Miscellaneous Income</h3>
+                            <button onclick="showAddIncomeModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-4 rounded-lg text-xs font-sans transition">Record Income</button>
+                        </div>
+                        <div class="overflow-y-auto max-h-96">
+                            <table class="w-full text-left border-collapse font-sans text-sm">
+                                <thead>
+                                    <tr class="bg-slate-50 border-b border-slate-200 font-bold">
+                                        <th class="p-3">Date</th>
+                                        <th class="p-3">Source</th>
+                                        <th class="p-3 text-right">Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="adminIncomeTableBody">
+                                    <tr>
+                                        <td colspan="3" class="p-3 text-center text-slate-400">No miscellaneous income recorded.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- PROFILE SETTINGS DIALOG (Student) -->
+    <div id="profileSettingsModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+        <div class="bg-white rounded-xl shadow-2xl p-8 max-w-lg w-full relative max-h-[90vh] overflow-y-auto">
+            <button onclick="hideProfileSettingsModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-xl focus:outline-none"><i class="fa-solid fa-xmark"></i></button>
+            <h3 class="text-2xl font-bold mb-2">Update Profile Settings</h3>
+            <p class="text-sm text-slate-500 mb-6 font-sans">Modify your display configurations securely.</p>
+
+            <form onsubmit="handleUpdateProfile(event)" class="space-y-4 font-sans text-sm">
+                <div>
+                    <label class="block text-xs font-bold uppercase text-[#1b2a4a] mb-1">Display Name</label>
+                    <input type="text" id="updateDisplayName" required class="w-full p-2.5 border border-slate-200 rounded-lg">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase text-[#1b2a4a] mb-1">Date of Birth</label>
+                    <input type="text" id="updateDob" class="w-full p-2.5 border border-slate-200 rounded-lg">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase text-[#1b2a4a] mb-1">Gender</label>
+                    <select id="updateGender" class="w-full p-2.5 border border-slate-200 rounded-lg">
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase text-[#1b2a4a] mb-1">Home Address</label>
+                    <input type="text" id="updateAddress" class="w-full p-2.5 border border-slate-200 rounded-lg">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase text-[#1b2a4a] mb-1">Guardian Name</label>
+                    <input type="text" id="updateGuardian" class="w-full p-2.5 border border-slate-200 rounded-lg">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase text-[#1b2a4a] mb-1">Guardian Phone Number</label>
+                    <input type="text" id="updatePhone" class="w-full p-2.5 border border-slate-200 rounded-lg">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase text-[#1b2a4a] mb-1">Profile Photo (Base64 or leave empty)</label>
+                    <textarea id="updatePhotoB64" class="w-full p-2 border border-slate-200 rounded-lg h-20 text-xs text-slate-500" placeholder="Base64 encoded string..."></textarea>
+                </div>
+                <button type="submit" class="w-full py-2.5 bg-[#2e86c1] hover:bg-[#1b2a4a] text-white font-semibold rounded-lg transition">Save Profile Configurations</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- REGISTER STUDENT DIALOG (Admin) -->
+    <div id="createStudentModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+        <div class="bg-white rounded-xl shadow-2xl p-8 max-w-lg w-full relative max-h-[90vh] overflow-y-auto">
+            <button onclick="hideCreateStudentModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-xl focus:outline-none"><i class="fa-solid fa-xmark"></i></button>
+            <h3 class="text-2xl font-bold mb-1">Register New Student</h3>
+            <p class="text-sm text-slate-500 mb-6 font-sans">Initialize student secure database credentials.</p>
+
+            <form onsubmit="handleCreateStudent(event)" class="space-y-4 font-sans text-sm">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-[#1b2a4a] mb-1">Username</label>
+                        <input type="text" id="createUsername" required class="w-full p-2.5 border border-slate-200 rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-[#1b2a4a] mb-1">Password</label>
+                        <input type="password" id="createPassword" required class="w-full p-2.5 border border-slate-200 rounded-lg">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase text-[#1b2a4a] mb-1">Full Student Name</label>
+                    <input type="text" id="createName" required class="w-full p-2.5 border border-slate-200 rounded-lg">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-[#1b2a4a] mb-1">Student ID Number</label>
+                        <input type="text" id="createNumber" required class="w-full p-2.5 border border-slate-200 rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-[#1b2a4a] mb-1">Class</label>
+                        <input type="text" id="createClass" required class="w-full p-2.5 border border-[#2e86c1] rounded-lg" placeholder="Grade 12A">
+                    </div>
+                </div>
+                <button type="submit" class="w-full py-2.5 bg-[#1b2a4a] hover:bg-[#2e86c1] text-white font-semibold rounded-lg transition mt-4">Save Student Account</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- GENERAL ACADEMIC ACTIONS DIALOG (Admin Adding performance, attendance or fee) -->
+    <div id="recordAcademicModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+        <div class="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full relative">
+            <button onclick="hideAcademicModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-xl focus:outline-none"><i class="fa-solid fa-xmark"></i></button>
+            <h3 id="academicModalTitle" class="text-2xl font-bold mb-1">Record Action</h3>
+            <p id="academicModalSub" class="text-sm text-slate-500 mb-6 font-sans">For Student: <span id="academicStudentNameSpan" class="font-bold"></span></p>
+
+            <form id="academicForm" onsubmit="handleSaveAcademic(event)" class="space-y-4 font-sans text-sm">
+                <input type="hidden" id="academicStudentId">
+                <input type="hidden" id="academicType">
+
+                <!-- Dynamic Input form boxes based on context -->
+                <div id="dynamicAcademicFields" class="space-y-4"></div>
+
+                <button type="submit" class="w-full py-2.5 bg-[#1b2a4a] hover:bg-[#2e86c1] text-white font-semibold rounded-lg transition mt-4">Save Entry</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- FINANCIALS ENTRY DIALOGS (Admin recording custom expense or other income) -->
+    <div id="recordFinancialModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+        <div class="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full relative">
+            <button onclick="hideFinancialModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-xl focus:outline-none"><i class="fa-solid fa-xmark"></i></button>
+            <h3 id="financialModalTitle" class="text-2xl font-bold mb-6">Financial Ledger Record</h3>
+
+            <form onsubmit="handleSaveFinancial(event)" class="space-y-4 font-sans text-sm">
+                <input type="hidden" id="financialType">
+                <div id="dynamicFinancialFields" class="space-y-4"></div>
+                <button type="submit" class="w-full py-2.5 bg-[#1b2a4a] hover:bg-[#2e86c1] text-white font-semibold rounded-lg transition mt-4">Save Entry</button>
+            </form>
+        </div>
+    </div>
+
+    <footer class="w-full bg-[#1b2a4a] text-sky-200 py-6 text-center border-t border-slate-800 font-sans text-sm mt-auto">
+        <p>© 2026 Focus Oasis Foundation. All Rights Reserved.</p>
+        <p class="text-xs text-sky-400/50 mt-1">Robust Connection Isolation • Encrypted Sessions • PostgreSQL / SQLite Backend</p>
+    </footer>
+
+    <!-- JS Controller integrations -->
+    <script src="app.js"></script>
+    <script>
+        // Check JWT authentication
+        if (!AppController.isAuthenticated()) {
+            window.location.href = 'index.html';
+        }
+
+        // Global variables for dashboards state
+        const session = AppController.getSession();
+        let studentDataGlobal = null;
+        let studentsListGlobal = [];
+
+        // Handle page initialization
+        window.onload = async function() {
+            document.getElementById('headerUserDisplayName').innerText = session.displayName;
+            document.getElementById('sidebarDisplayName').innerText = session.displayName;
+            document.getElementById('sidebarRoleLabel').innerText = session.userType;
+
+            // Render Initials in profile photo if no photo uploaded
+            document.getElementById('profileInitials').innerText = AppController.getInitials(session.displayName);
+
+            if (session.userType === 'student') {
+                document.getElementById('studentMenu').classList.remove('hidden');
+                await loadStudentDashboardData();
+                switchSection('student-dashboard');
+            } else {
+                document.getElementById('adminMenu').classList.remove('hidden');
+                await loadAdminDashboardData();
+                switchSection('admin-overview');
+            }
+        };
+
+        function switchSection(sectionId) {
+            // Hide all sections
+            const sections = ['student-dashboard', 'student-attendance', 'student-performance', 'student-fees', 'admin-overview', 'admin-students', 'admin-finances'];
+            sections.forEach(sec => {
+                const el = document.getElementById(sec);
+                if (el) el.classList.add('hidden');
+            });
+
+            // Show target
+            document.getElementById(sectionId).classList.remove('hidden');
+
+            // De-activate all sidebar nav highlights
+            const sidebarButtons = document.querySelectorAll('aside nav button');
+            sidebarButtons.forEach(btn => {
+                btn.classList.remove('sidebar-active', 'bg-[#2e86c1]');
+            });
+
+            // Highlight target sidebar button
+            const activeBtn = document.getElementById(`btn-${sectionId}`);
+            if (activeBtn) {
+                activeBtn.classList.add('sidebar-active');
+            }
+        }
+
+        // ====================================================
+        // DATA POPULATION CONTROLLERS (STUDENT PORTAL)
+        // ====================================================
+        async function loadStudentDashboardData() {
+            const res = await AppController.getStudentProfile();
+            if (res.success) {
+                studentDataGlobal = res.data;
+                const stud = studentDataGlobal.student;
+
+                // Set initials/Profile Photo
+                if (stud.profile_photo_b64) {
+                    document.getElementById('profilePhotoWrapper').innerHTML = `<img src="data:image/jpeg;base64,${stud.profile_photo_b64}" class="w-full h-full object-cover">`;
+                }
+
+                // Student dashboard fields
+                document.getElementById('studDetailsName').innerText = stud.student_name;
+                document.getElementById('studDetailsDob').innerText = stud.date_of_birth || 'N/A';
+                document.getElementById('studDetailsGender').innerText = stud.gender || 'N/A';
+                document.getElementById('studDetailsAddress').innerText = stud.address || 'N/A';
+                document.getElementById('studDetailsGuardian').innerText = stud.guardian_name || 'N/A';
+                document.getElementById('studDetailsPhone').innerText = stud.guardian_phone || 'N/A';
+
+                document.getElementById('studRegId').innerText = stud.student_number || 'N/A';
+                document.getElementById('studRegClass').innerText = stud.student_class || 'N/A';
+                document.getElementById('studRegStatus').innerText = stud.status;
+
+                // Load and calculate attendance summary
+                const atts = studentDataGlobal.attendances;
+                document.getElementById('studAttDaysTracked').innerText = atts.length;
+                const presents = atts.filter(a => a.status.includes('✅') || a.status.toLowerCase().includes('present')).length;
+                document.getElementById('studAttDaysPresent').innerText = presents;
+
+                const attRate = atts.length > 0 ? Math.round((presents / atts.length) * 100) + '%' : 'N/A';
+                document.getElementById('studAttRate').innerText = attRate;
+
+                // Attendance table
+                const attTbody = document.getElementById('studAttTableBody');
+                if (atts.length > 0) {
+                    attTbody.innerHTML = atts.map(a => `
+                        <tr class="border-b border-slate-100 hover:bg-slate-50/50">
+                            <td class="p-4">${a.date}</td>
+                            <td class="p-4 font-semibold">${a.status}</td>
+                        </tr>
+                    `).join('');
+                } else {
+                    attTbody.innerHTML = `<tr><td colspan="2" class="p-4 text-center text-slate-400">No attendance logs available.</td></tr>`;
+                }
+
+                // Load performance metrics
+                const perfs = studentDataGlobal.performances;
+                document.getElementById('studPerfCount').innerText = perfs.length;
+                let avgMark = 'N/A';
+                if (perfs.length > 0) {
+                    const numericMarks = perfs.map(p => parseFloat(p.mark.replace('%', ''))).filter(m => !isNaN(m));
+                    if (numericMarks.length > 0) {
+                        const sum = numericMarks.reduce((a, b) => a + b, 0);
+                        avgMark = Math.round(sum / numericMarks.length) + '%';
+                    }
+                }
+                document.getElementById('studPerfAverage').innerText = avgMark;
+
+                // Performance table
+                const perfTbody = document.getElementById('studPerfTableBody');
+                if (perfs.length > 0) {
+                    perfTbody.innerHTML = perfs.map(p => `
+                        <tr class="border-b border-slate-100 hover:bg-slate-50/50">
+                            <td class="p-4">${p.date}</td>
+                            <td class="p-4 font-semibold text-[#1b2a4a]">${p.activity}</td>
+                            <td class="p-4 font-bold text-sky-700">${p.mark}</td>
+                            <td class="p-4 text-slate-500 italic">${p.comment || 'N/A'}</td>
+                        </tr>
+                    `).join('');
+                } else {
+                    perfTbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400">No grades registered.</td></tr>`;
+                }
+
+                // Load payments summary
+                const payments = studentDataGlobal.payments;
+                const totalPaid = payments.reduce((sum, p) => sum + p.amount_paid, 0);
+
+                const monthlyFee = 50;
+                const monthsEnrolled = Math.max(1, [...new Set(payments.map(p => p.month_covered))].length);
+                const totalDue = monthsEnrolled * monthlyFee;
+                const balance = studentDataGlobal.overall_balance;
+
+                document.getElementById('studFeesDue').innerText = `$${totalDue}`;
+                document.getElementById('studFeesPaid').innerText = `$${totalPaid}`;
+
+                const balEl = document.getElementById('studFeesBalance');
+                balEl.innerText = `$${balance}`;
+                if (balance <= 0) {
+                    balEl.className = "text-4xl font-bold text-emerald-600";
+                } else {
+                    balEl.className = "text-4xl font-bold text-rose-600";
+                }
+
+                // Payments table
+                const payTbody = document.getElementById('studPaymentsTableBody');
+                if (payments.length > 0) {
+                    payTbody.innerHTML = payments.map(p => `
+                        <tr class="border-b border-slate-100 hover:bg-slate-50/50">
+                            <td class="p-4">${p.date}</td>
+                            <td class="p-4 font-semibold">${p.month_covered}</td>
+                            <td class="p-4">${p.payment_method}</td>
+                            <td class="p-4 font-bold text-emerald-600">$${p.amount_paid}</td>
+                        </tr>
+                    `).join('');
+                } else {
+                    payTbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400">No payment logs loaded.</td></tr>`;
+                }
+            } else {
+                alert("Failed to retrieve profile details.");
+            }
+        }
+
+        function showProfileSettingsModal() {
+            if (studentDataGlobal) {
+                const stud = studentDataGlobal.student;
+                document.getElementById('updateDisplayName').value = stud.student_name;
+                document.getElementById('updateDob').value = stud.date_of_birth || '';
+                document.getElementById('updateGender').value = stud.gender || 'Male';
+                document.getElementById('updateAddress').value = stud.address || '';
+                document.getElementById('updateGuardian').value = stud.guardian_name || '';
+                document.getElementById('updatePhone').value = stud.guardian_phone || '';
+                document.getElementById('updatePhotoB64').value = stud.profile_photo_b64 || '';
+                document.getElementById('profileSettingsModal').classList.remove('hidden');
+            }
+        }
+
+        function hideProfileSettingsModal() {
+            document.getElementById('profileSettingsModal').classList.add('hidden');
+        }
+
+        async function handleUpdateProfile(e) {
+            e.preventDefault();
+            const data = {
+                student_name: document.getElementById('updateDisplayName').value,
+                date_of_birth: document.getElementById('updateDob').value,
+                gender: document.getElementById('updateGender').value,
+                address: document.getElementById('updateAddress').value,
+                guardian_name: document.getElementById('updateGuardian').value,
+                guardian_phone: document.getElementById('updatePhone').value,
+                profile_photo_b64: document.getElementById('updatePhotoB64').value || null
+            };
+
+            const res = await AppController.updateStudentProfile(data);
+            if (res.success) {
+                alert("Profile settings successfully updated!");
+                hideProfileSettingsModal();
+                await loadStudentDashboardData();
+            } else {
+                alert("Failed to update profile: " + res.error);
+            }
+        }
+
+        // ====================================================
+        // DATA POPULATION CONTROLLERS (ADMIN PORTAL)
+        // ====================================================
+        async function loadAdminDashboardData() {
+            // 1. Load Overview statistics
+            const overviewRes = await AppController.getAdminOverview();
+            if (overviewRes.success) {
+                const ov = overviewRes.data;
+                document.getElementById('adminStatStudents').innerText = ov.total_students;
+                document.getElementById('adminStatClasses').innerText = ov.total_classes;
+                document.getElementById('adminStatFees').innerText = `$${ov.fees_collected.toLocaleString()}`;
+
+                const netEl = document.getElementById('adminStatNet');
+                netEl.innerText = `$${ov.net_position.toLocaleString()}`;
+                if (ov.net_position >= 0) {
+                    netEl.className = "text-4xl font-bold text-emerald-600";
+                } else {
+                    netEl.className = "text-4xl font-bold text-rose-600";
+                }
+
+                document.getElementById('adminBreakdownFees').innerText = `$${ov.fees_collected.toLocaleString()}`;
+                document.getElementById('adminBreakdownIncome').innerText = `$${ov.other_income.toLocaleString()}`;
+                document.getElementById('adminBreakdownExpenses').innerText = `$${ov.expenses.toLocaleString()}`;
+
+                // Class density distribution list
+                const distDiv = document.getElementById('adminClassesDistributionDiv');
+                const classes = ov.classes_distribution;
+                if (Object.keys(classes).length > 0) {
+                    distDiv.innerHTML = Object.keys(classes).map(cls => `
+                        <div class="flex items-center justify-between border border-slate-100 rounded-lg p-3 bg-slate-50 hover:bg-slate-100/50">
+                            <span class="font-semibold text-slate-600">${cls}</span>
+                            <span class="bg-[#1b2a4a] text-white px-3 py-1 rounded-full text-xs font-bold font-sans">${classes[cls]} Students</span>
+                        </div>
+                    `).join('');
+                } else {
+                    distDiv.innerHTML = `<p class="text-slate-400">No classes distribution recorded.</p>`;
+                }
+            }
+
+            // 2. Load Registry list
+            const studRes = await AppController.getAdminStudentsList();
+            if (studRes.success) {
+                studentsListGlobal = studRes.data;
+                const studTbody = document.getElementById('adminStudentsTableBody');
+                if (studentsListGlobal.length > 0) {
+                    studTbody.innerHTML = studentsListGlobal.map(s => `
+                        <tr class="border-b border-slate-100 hover:bg-slate-50/50">
+                            <td class="p-4 font-bold text-slate-500">${s.student_number || 'N/A'}</td>
+                            <td class="p-4 font-bold text-[#1b2a4a] flex items-center space-x-3">
+                                <div class="w-8 h-8 rounded-full overflow-hidden bg-slate-200 border border-slate-300 flex items-center justify-center text-xs font-bold">
+                                    ${s.profile_photo_b64 ? `<img src="data:image/jpeg;base64,${s.profile_photo_b64}" class="w-full h-full object-cover">` : AppController.getInitials(s.student_name)}
+                                </div>
+                                <span>${s.student_name}</span>
+                            </td>
+                            <td class="p-4 font-semibold text-sky-700">${s.student_class || 'N/A'}</td>
+                            <td class="p-4 font-sans text-xs">
+                                <div><span class="font-bold">Guardian:</span> ${s.guardian_name || 'N/A'}</div>
+                                <div class="text-slate-500"><span class="font-bold">Phone:</span> ${s.guardian_phone || 'N/A'}</div>
+                            </td>
+                            <td class="p-4 flex items-center space-x-2">
+                                <button onclick="openAcademicModal(${s.id}, 'payment', '${s.student_name}')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-1.5 px-3 rounded text-xs transition flex items-center space-x-1">
+                                    <i class="fa-solid fa-money-bill-wave"></i><span>Fee</span>
+                                </button>
+                                <button onclick="openAcademicModal(${s.id}, 'performance', '${s.student_name}')" class="bg-amber-600 hover:bg-amber-700 text-white font-bold py-1.5 px-3 rounded text-xs transition flex items-center space-x-1">
+                                    <i class="fa-solid fa-graduation-cap"></i><span>Mark</span>
+                                </button>
+                                <button onclick="openAcademicModal(${s.id}, 'attendance', '${s.student_name}')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1.5 px-3 rounded text-xs transition flex items-center space-x-1">
+                                    <i class="fa-solid fa-calendar-check"></i><span>Att</span>
+                                </button>
+                                <button onclick="handleDeleteStudent(${s.id})" class="bg-rose-600 hover:bg-rose-700 text-white py-1.5 px-2 rounded text-xs transition flex items-center space-x-1">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `).join('');
+                } else {
+                    studTbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">No registered students found.</td></tr>`;
+                }
+            }
+
+            // 3. Load Operating Expenses
+            const expensesRes = await AppController.getAdminExpensesList();
+            if (expensesRes.success) {
+                const expTbody = document.getElementById('adminExpensesTableBody');
+                const exps = expensesRes.data;
+                if (exps.length > 0) {
+                    expTbody.innerHTML = exps.map(e => `
+                        <tr class="border-b border-slate-100 hover:bg-slate-50/50">
+                            <td class="p-3">${e.date}</td>
+                            <td class="p-3">
+                                <div class="font-bold text-slate-700">${e.category}</div>
+                                <div class="text-xs text-slate-400">${e.description || ''}</div>
+                            </td>
+                            <td class="p-3 text-right font-bold text-rose-600">-$${e.amount}</td>
+                        </tr>
+                    `).join('');
+                } else {
+                    expTbody.innerHTML = `<tr><td colspan="3" class="p-3 text-center text-slate-400">No expenses logged.</td></tr>`;
+                }
+            }
+
+            // 4. Load Miscellaneous Income
+            const incomeRes = await AppController.getAdminIncomeList();
+            if (incomeRes.success) {
+                const incTbody = document.getElementById('adminIncomeTableBody');
+                const incs = incomeRes.data;
+                if (incs.length > 0) {
+                    incTbody.innerHTML = incs.map(i => `
+                        <tr class="border-b border-slate-100 hover:bg-slate-50/50">
+                            <td class="p-3">${i.date}</td>
+                            <td class="p-3 font-semibold text-slate-700">${i.source}</td>
+                            <td class="p-3 text-right font-bold text-emerald-600">+$${i.amount}</td>
+                        </tr>
+                    `).join('');
+                } else {
+                    incTbody.innerHTML = `<tr><td colspan="3" class="p-3 text-center text-slate-400">No other income logged.</td></tr>`;
+                }
+            }
+        }
+
+        // --- Student Registration Admin Modals
+        function showCreateStudentModal() {
+            document.getElementById('createStudentModal').classList.remove('hidden');
+        }
+
+        function hideCreateStudentModal() {
+            document.getElementById('createStudentModal').classList.add('hidden');
+        }
+
+        async function handleCreateStudent(e) {
+            e.preventDefault();
+            const payload = {
+                username: document.getElementById('createUsername').value,
+                password: document.getElementById('createPassword').value,
+                student_name: document.getElementById('createName').value,
+                student_number: document.getElementById('createNumber').value,
+                student_class: document.getElementById('createClass').value
+            };
+
+            const res = await AppController.createStudent(payload);
+            if (res.success) {
+                alert("Student account registered successfully in SQL Database!");
+                hideCreateStudentModal();
+                await loadAdminDashboardData();
+            } else {
+                alert("Failed to create student: " + res.error);
+            }
+        }
+
+        async function handleDeleteStudent(id) {
+            if (confirm("Are you sure you want to permanently delete this student record? This operation utilizes cascading integrity and will instantly clean up their attendance, grades, and payments records in PostgreSQL.")) {
+                const res = await AppController.deleteStudent(id);
+                if (res.success) {
+                    alert("Student successfully removed from directory.");
+                    await loadAdminDashboardData();
+                } else {
+                    alert("Delete failed: " + res.error);
+                }
+            }
+        }
+
+        // --- Academic Modals (Attendance, grades, fee record entry)
+        function openAcademicModal(studentId, type, studentName) {
+            document.getElementById('academicStudentId').value = studentId;
+            document.getElementById('academicType').value = type;
+            document.getElementById('academicStudentNameSpan').innerText = studentName;
+
+            const fieldsDiv = document.getElementById('dynamicAcademicFields');
+            const titleEl = document.getElementById('academicModalTitle');
+
+            if (type === 'payment') {
+                titleEl.innerText = "Add Fee Payment Ledger Record";
+                fieldsDiv.innerHTML = `
+                    <div>
+                        <label class="block text-xs font-bold uppercase mb-1">Billing Month Covered</label>
+                        <input type="text" id="payMonth" required class="w-full p-2.5 border border-slate-200 rounded-lg" placeholder="e.g. January 2026">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase mb-1">Amount Paid ($)</label>
+                        <input type="number" id="payAmount" required class="w-full p-2.5 border border-slate-200 rounded-lg" placeholder="50">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase mb-1">Payment Channel</label>
+                        <select id="payMethod" class="w-full p-2.5 border border-slate-200 rounded-lg">
+                            <option value="Cash">Cash</option>
+                            <option value="Card Payment">Card Payment</option>
+                            <option value="Bank Transfer">Bank Transfer</option>
+                        </select>
+                    </div>
+                `;
+            } else if (type === 'performance') {
+                titleEl.innerText = "Log Academic Grade Record";
+                fieldsDiv.innerHTML = `
+                    <div>
+                        <label class="block text-xs font-bold uppercase mb-1">Test Activity Name</label>
+                        <input type="text" id="perfActivity" required class="w-full p-2.5 border border-slate-200 rounded-lg" placeholder="e.g. Science Exam 1">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase mb-1">Academic Mark</label>
+                        <input type="text" id="perfMark" required class="w-full p-2.5 border border-slate-200 rounded-lg" placeholder="85%">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase mb-1">Instructor Comments</label>
+                        <input type="text" id="perfComment" class="w-full p-2.5 border border-slate-200 rounded-lg" placeholder="Great improvement">
+                    </div>
+                `;
+            } else if (type === 'attendance') {
+                titleEl.innerText = "Record Daily Attendance Status";
+                fieldsDiv.innerHTML = `
+                    <div>
+                        <label class="block text-xs font-bold uppercase mb-1">Daily Status</label>
+                        <select id="attStatus" class="w-full p-2.5 border border-slate-200 rounded-lg">
+                            <option value="✅ Present">✅ Present</option>
+                            <option value="❌ Absent">❌ Absent</option>
+                        </select>
+                    </div>
+                `;
+            }
+
+            document.getElementById('recordAcademicModal').classList.remove('hidden');
+        }
+
+        function hideAcademicModal() {
+            document.getElementById('recordAcademicModal').classList.add('hidden');
+        }
+
+        async function handleSaveAcademic(e) {
+            e.preventDefault();
+            const studentId = document.getElementById('academicStudentId').value;
+            const type = document.getElementById('academicType').value;
+            let success = false;
+            let errMessage = "";
+
+            if (type === 'payment') {
+                const res = await AppController.addFeePayment({
+                    student_id: parseInt(studentId),
+                    month_covered: document.getElementById('payMonth').value,
+                    amount_paid: parseFloat(document.getElementById('payAmount').value),
+                    payment_method: document.getElementById('payMethod').value
+                });
+                success = res.success;
+                errMessage = res.error;
+            } else if (type === 'performance') {
+                const res = await AppController.addPerformance({
+                    student_id: parseInt(studentId),
+                    activity: document.getElementById('perfActivity').value,
+                    mark: document.getElementById('perfMark').value,
+                    comment: document.getElementById('perfComment').value
+                });
+                success = res.success;
+                errMessage = res.error;
+            } else if (type === 'attendance') {
+                const res = await AppController.addAttendance({
+                    student_id: parseInt(studentId),
+                    status: document.getElementById('attStatus').value
+                });
+                success = res.success;
+                errMessage = res.error;
+            }
+
+            if (success) {
+                alert("Record successfully saved inside relational tables!");
+                hideAcademicModal();
+                await loadAdminDashboardData();
+            } else {
+                alert("Failed to save entry: " + errMessage);
+            }
+        }
+
+        // --- Operating Finance Dialogs
+        function showAddExpenseModal() {
+            document.getElementById('financialType').value = 'expense';
+            document.getElementById('financialModalTitle').innerText = "Record Operational Expense";
+            document.getElementById('dynamicFinancialFields').innerHTML = `
+                <div>
+                    <label class="block text-xs font-bold uppercase mb-1">Expense Category</label>
+                    <input type="text" id="finCategory" required class="w-full p-2.5 border border-slate-200 rounded-lg" placeholder="e.g. Utility Bill, Maintenance">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase mb-1">Expense Description</label>
+                    <input type="text" id="finDesc" class="w-full p-2.5 border border-slate-200 rounded-lg" placeholder="School building painting">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase mb-1">Amount ($)</label>
+                    <input type="number" id="finAmount" required class="w-full p-2.5 border border-slate-200 rounded-lg" placeholder="250">
+                </div>
+            `;
+            document.getElementById('recordFinancialModal').classList.remove('hidden');
+        }
+
+        function showAddIncomeModal() {
+            document.getElementById('financialType').value = 'income';
+            document.getElementById('financialModalTitle').innerText = "Record Miscellaneous Income";
+            document.getElementById('dynamicFinancialFields').innerHTML = `
+                <div>
+                    <label class="block text-xs font-bold uppercase mb-1">Income Source</label>
+                    <input type="text" id="finSource" required class="w-full p-2.5 border border-slate-200 rounded-lg" placeholder="e.g. Donations, Hall Renting">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase mb-1">Amount ($)</label>
+                    <input type="number" id="finAmount" required class="w-full p-2.5 border border-slate-200 rounded-lg" placeholder="500">
+                </div>
+            `;
+            document.getElementById('recordFinancialModal').classList.remove('hidden');
+        }
+
+        function hideFinancialModal() {
+            document.getElementById('recordFinancialModal').classList.add('hidden');
+        }
+
+        async function handleSaveFinancial(e) {
+            e.preventDefault();
+            const type = document.getElementById('financialType').value;
+            let success = false;
+            let errMessage = "";
+
+            if (type === 'expense') {
+                const res = await AppController.addExpense({
+                    category: document.getElementById('finCategory').value,
+                    description: document.getElementById('finDesc').value,
+                    amount: parseFloat(document.getElementById('finAmount').value)
+                });
+                success = res.success;
+                errMessage = res.error;
+            } else {
+                const res = await AppController.addIncome({
+                    source: document.getElementById('finSource').value,
+                    amount: parseFloat(document.getElementById('finAmount').value)
+                });
+                success = res.success;
+                errMessage = res.error;
+            }
+
+            if (success) {
+                alert("Financial ledger record saved.");
+                hideFinancialModal();
+                await loadAdminDashboardData();
+            } else {
+                alert("Record insertion failed: " + errMessage);
+            }
+        }
+
+        function handleLogout() {
+            AppController.logout();
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>
