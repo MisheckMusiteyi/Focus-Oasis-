@@ -384,11 +384,15 @@ def connect_to_sheets():
     return gspread.authorize(creds)
 
 def load_data(sheet_name):
+    """Load data from a sheet, with column names stripped of leading/trailing spaces."""
     client = connect_to_sheets()
     for attempt in range(3):
         try:
             sheet = client.open("Focus Oasis Foundation").worksheet(sheet_name)
-            return pd.DataFrame(sheet.get_all_records())
+            df = pd.DataFrame(sheet.get_all_records())
+            # Strip whitespace from column names
+            df.columns = df.columns.str.strip()
+            return df
         except Exception as e:
             if attempt < 2:
                 connect_to_sheets.clear()
